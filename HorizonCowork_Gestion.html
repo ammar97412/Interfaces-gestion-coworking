@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Horizon Cowork — Gestion</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1B2A55;--navy2:#121C3A;--navy3:#26396F;--gold:#D9A126;--gold2:#FBF1D8;--bg:#F1F3F8;--sf:#fff;--line:#DCE1EA;--tx:#1C2333;--mu:#66708A;--gr:#1E8A5A;--gr2:#E3F4EB;--rd:#C43D32;--rd2:#FBE7E5;--bl:#2F5FD0;--bl2:#E6ECFB;--or:#C96A12;--or2:#FCEEDD;--r:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Manrope',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;color:var(--tx);background:var(--bg);line-height:1.45;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--bl)}
+#app{display:flex;min-height:100vh}
+/* Sidebar */
+.sb{width:232px;background:var(--navy);color:#fff;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;flex-shrink:0}
+.sb-brand{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-brand b{display:block;font-size:17px;font-weight:800;letter-spacing:-.2px}
+.sb-brand span{font-size:12px;color:rgba(255,255,255,.6)}
+.sb-brand .h{display:inline-flex;width:30px;height:30px;border-radius:7px;background:var(--gold);color:var(--navy);font-weight:800;align-items:center;justify-content:center;margin-right:8px;vertical-align:middle;font-size:16px}
+.nav{flex:1;overflow:auto;padding:10px 10px}
+.nav-sec{font-size:11px;color:rgba(255,255,255,.4);padding:12px 10px 4px;font-weight:600}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:rgba(255,255,255,.82);text-decoration:none;font-weight:500;cursor:pointer;margin-bottom:1px}
+.nav a svg{width:17px;height:17px;flex-shrink:0;opacity:.85}
+.nav a:hover{background:rgba(255,255,255,.08)}
+.nav a.on{background:var(--gold);color:var(--navy);font-weight:700}
+.nav a.on svg{opacity:1}
+.nav a .cnt{margin-left:auto;background:rgba(255,255,255,.15);font-size:11px;padding:1px 7px;border-radius:10px;font-weight:700}
+.nav a.on .cnt{background:rgba(0,0,0,.12)}
+.sb-foot{padding:12px 18px;font-size:11px;color:rgba(255,255,255,.5);border-top:1px solid rgba(255,255,255,.1)}
+/* Main */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:14px;padding:14px 26px;background:var(--sf);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top h1{font-size:20px;font-weight:800;letter-spacing:-.3px}
+.top .sub{color:var(--mu);font-size:13px}
+.top .sp{flex:1}
+.save{font-size:12px;color:var(--mu);display:flex;align-items:center;gap:6px}
+.save i{width:8px;height:8px;border-radius:50%;background:var(--gr);display:inline-block}
+.save.dirty i{background:var(--gold)}
+.content{padding:22px 26px 60px;flex:1}
+/* Cards */
+.card{background:var(--sf);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card h3{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3 .sp{flex:1}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g6{grid-template-columns:repeat(6,1fr)}
+.kpi{background:var(--sf);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--mu);font-weight:600}
+.kpi .v{font-size:22px;font-weight:800;margin-top:4px;letter-spacing:-.4px}
+.kpi .d{font-size:12px;color:var(--mu);margin-top:2px}
+.kpi.warn .v{color:var(--rd)}.kpi.ok .v{color:var(--gr)}.kpi.gold .v{color:var(--or)}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:7px;border:1px solid var(--line);background:var(--sf);cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap}
+.btn:hover{background:#f6f7fa}
+.btn.p{background:var(--navy);border-color:var(--navy);color:#fff}.btn.p:hover{background:var(--navy3)}
+.btn.g{background:var(--gold);border-color:var(--gold);color:var(--navy)}.btn.g:hover{filter:brightness(1.05)}
+.btn.d{color:var(--rd);border-color:#f0c9c5}.btn.d:hover{background:var(--rd2)}
+.btn.s{padding:4px 9px;font-size:12px}
+.btn.ok{background:var(--gr);border-color:var(--gr);color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btns{display:flex;gap:6px;flex-wrap:wrap}
+/* Tables */
+.tw{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;color:var(--mu);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #EDF0F5;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr.rowc{cursor:pointer}tr.rowc:hover td{background:#F7F8FB}
+td.r,th.r{text-align:right}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11.5px;font-weight:700}
+.t-gr{background:var(--gr2);color:var(--gr)}.t-rd{background:var(--rd2);color:var(--rd)}.t-bl{background:var(--bl2);color:var(--bl)}.t-or{background:var(--or2);color:var(--or)}.t-gy{background:#EEF0F4;color:var(--mu)}.t-na{background:var(--navy);color:#fff}.t-go{background:var(--gold2);color:#8A5F06}
+/* Forms */
+.f{display:grid;gap:12px}
+.f2{grid-template-columns:1fr 1fr}.f3{grid-template-columns:1fr 1fr 1fr}.f4{grid-template-columns:repeat(4,1fr)}
+.fl{display:flex;flex-direction:column;gap:4px}
+.fl label{font-size:12px;font-weight:600;color:var(--mu)}
+.fl input,.fl select,.fl textarea{padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;width:100%}
+.fl input:focus,.fl select:focus,.fl textarea:focus{outline:2px solid rgba(47,95,208,.35);border-color:var(--bl)}
+.fl textarea{min-height:70px;resize:vertical}
+.fs{grid-column:1/-1;font-weight:700;font-size:13px;color:var(--navy);border-bottom:1px solid var(--line);padding-bottom:5px;margin-top:6px}
+.chk{display:flex;align-items:center;gap:8px;font-weight:500}
+.chk input{width:auto}
+.hint{font-size:12px;color:var(--mu)}
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.bar input,.bar select{padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:#fff}
+.bar .sp{flex:1}
+.empty{padding:30px;text-align:center;color:var(--mu)}
+.empty b{display:block;color:var(--tx);margin-bottom:4px}
+/* Modal */
+.ov{position:fixed;inset:0;background:rgba(18,28,58,.5);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow:auto}
+.md{background:#fff;border-radius:12px;width:100%;max-width:680px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:pop .15s ease-out}
+.md.w{max-width:960px}.md.xl{max-width:1100px}
+@keyframes pop{from{transform:translateY(8px);opacity:0}}
+.md-h{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+.md-h h2{font-size:16px;font-weight:800;flex:1}
+.md-b{padding:20px}
+.md-f{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line);background:#FAFBFD;border-radius:0 0 12px 12px}
+.x{background:none;border:0;font-size:20px;cursor:pointer;color:var(--mu);padding:4px 8px}
+/* Tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.tabs button{background:none;border:0;padding:8px 14px;cursor:pointer;font-weight:600;color:var(--mu);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--navy);border-color:var(--gold)}
+/* Space map */
+.map{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.sp-c{border:1.5px solid var(--line);border-radius:8px;padding:10px;min-height:74px;cursor:pointer;background:#fff;position:relative}
+.sp-c b{display:block;font-size:13px}
+.sp-c small{color:var(--mu);font-size:11px;display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-c.occ{background:var(--navy);border-color:var(--navy);color:#fff}.sp-c.occ small{color:rgba(255,255,255,.7)}
+.sp-c.res{background:var(--gold2);border-color:var(--gold)}
+.sp-c.big{grid-column:span 2}
+.sp-c.wide{grid-column:span 3}
+.sp-c .st{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--gr)}
+.sp-c.occ .st{background:var(--gold)}.sp-c.res .st{background:var(--or)}
+/* Agenda */
+.ag{display:grid;grid-template-columns:52px repeat(7,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#fff}
+.ag .hd{padding:8px 4px;text-align:center;font-size:12px;font-weight:700;border-bottom:1px solid var(--line);border-left:1px solid var(--line);background:#FAFBFD}
+.ag .hd.td{background:var(--gold2);color:#8A5F06}
+.ag .hd small{display:block;font-weight:500;color:var(--mu)}
+.ag .tc{border-left:0!important}
+.ag .col{position:relative;border-left:1px solid var(--line);height:720px;background-image:linear-gradient(to bottom,#EEF0F5 1px,transparent 1px);background-size:100% 60px}
+.ag .tcol{height:720px;font-size:11px;color:var(--mu)}
+.ag .tcol div{height:60px;padding:2px 4px;text-align:right}
+.ev{position:absolute;left:3px;right:3px;border-radius:5px;padding:3px 6px;font-size:11px;line-height:1.3;overflow:hidden;cursor:pointer;border-left:3px solid;background:var(--bl2);border-color:var(--bl);color:#1c3a8a}
+.ev.rdv{background:var(--or2);border-color:var(--or);color:#7a3d05}
+.ev.salle{background:var(--gold2);border-color:var(--gold);color:#6b4a03}
+.ev.att{opacity:.65;border-style:dashed}
+.ev b{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot{position:absolute;left:0;right:0;height:60px;cursor:pointer}
+.slot:hover{background:rgba(217,161,38,.12)}
+.lg{display:flex;gap:14px;font-size:12px;color:var(--mu);margin-top:8px}.lg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+/* Lines editor */
+.lines td{padding:4px}.lines input,.lines select{padding:6px 8px;border:1px solid var(--line);border-radius:5px;width:100%}
+.tot{margin-left:auto;width:320px;margin-top:12px}
+.tot div{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+.tot div.b{font-weight:800;font-size:15px;border-top:2px solid var(--navy);margin-top:4px;padding-top:8px}
+/* Bars chart */
+.bars{display:flex;align-items:flex-end;gap:6px;height:160px;padding-top:10px}
+.bars div{flex:1;background:var(--navy);border-radius:4px 4px 0 0;position:relative;min-height:2px}
+.bars div span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:10px;color:var(--mu)}
+.bars div em{position:absolute;top:-16px;left:0;right:0;text-align:center;font-size:10px;font-style:normal;color:var(--tx);white-space:nowrap}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:#fff;padding:11px 16px;border-radius:8px;font-weight:600;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:pop .2s}
+.toast.err{background:var(--rd)}
+.alert{display:flex;gap:10px;padding:9px 12px;border-radius:7px;background:var(--or2);color:#7a3d05;font-size:13px;margin-bottom:6px;align-items:center}
+.alert.r{background:var(--rd2);color:var(--rd)}.alert.b{background:var(--bl2);color:#1c3a8a}
+.alert .sp{flex:1}
+.list{display:flex;flex-direction:column;gap:6px}
+.li{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:7px}
+.li .t{font-weight:700;font-size:12px;color:var(--mu);min-width:52px}
+.li .sp{flex:1}
+.mini{font-size:12px;color:var(--mu)}
+.big-num{font-size:26px;font-weight:800}
+/* Print */
+#printArea{display:none}
+@media print{body{background:#fff}#app{display:none}#printArea{display:block}.ov{display:none}}
+.doc{font-family:'Manrope',Arial,sans-serif;color:#111;font-size:12.5px;line-height:1.5;max-width:800px;margin:0 auto;padding:30px}
+.doc .hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1B2A55;padding-bottom:14px;margin-bottom:20px}
+.doc .hd img{max-height:70px;max-width:200px}
+.doc .hd .co{font-size:11.5px;color:#444;line-height:1.5}
+.doc .hd .co b{font-size:16px;color:#1B2A55;display:block}
+.doc .ttl{text-align:right}.doc .ttl h1{font-size:24px;color:#1B2A55;margin:0}.doc .ttl div{font-size:12px;color:#444}
+.doc .box{border:1px solid #ccc;border-radius:6px;padding:10px 12px;margin-bottom:14px}
+.doc .box b{color:#1B2A55}
+.doc table{width:100%;border-collapse:collapse;margin:14px 0}
+.doc th{background:#1B2A55;color:#fff;padding:7px 8px;font-size:11.5px;text-align:left}
+.doc td{padding:7px 8px;border-bottom:1px solid #ddd}
+.doc .r{text-align:right}
+.doc .tots{margin-left:auto;width:300px}
+.doc .tots div{display:flex;justify-content:space-between;padding:3px 0}
+.doc .tots .b{font-weight:800;border-top:2px solid #1B2A55;font-size:14px;padding-top:6px;margin-top:4px}
+.doc .ft{margin-top:30px;font-size:10.5px;color:#555;border-top:1px solid #ccc;padding-top:8px}
+.doc .sig{display:flex;justify-content:space-between;margin-top:40px}
+.doc .sig div{width:45%;text-align:center}.doc .sig div span{display:block;height:60px;border-bottom:1px solid #999;margin-top:6px}
+.doc h2{font-size:15px;color:#1B2A55;margin:16px 0 6px}
+.doc p{margin:6px 0;text-align:justify}
+.doc .center{text-align:center}
+.doc-view{background:#e9ecf2;padding:14px;border-radius:8px;max-height:65vh;overflow:auto}
+.doc-view .doc{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+@media(max-width:900px){#app{flex-direction:column}.sb{width:100%;height:auto;position:static}.nav{display:flex;overflow-x:auto;padding:6px}.nav-sec{display:none}.nav a{white-space:nowrap}.nav a .cnt{display:none}.g2,.g3,.g4,.g6,.f2,.f3,.f4{grid-template-columns:1fr 1fr}.map{grid-template-columns:repeat(3,1fr)}.content{padding:14px}.top{padding:12px 14px}}
+@media(max-width:560px){.g2,.g3,.g4,.g6,.f2,.f3,.f4{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+<aside class="sb">
+ <div class="sb-brand"><span class="h">H</span><b style="display:inline">Horizon Cowork</b><span style="display:block;margin-top:4px">Plateforme de gestion</span></div>
+ <nav class="nav" id="nav"></nav>
+ <div class="sb-foot">Horizon Digital Service<br><span id="stoMode">—</span></div>
+</aside>
+<div class="main">
+ <div class="top"><div><h1 id="pTitle">Tableau de bord</h1><div class="sub" id="pSub"></div></div><div class="sp"></div><div class="save" id="saveInd"><i></i><span>Sauvegardé</span></div><button class="btn g" onclick="App.quickSale()">+ Encaisser un pass</button></div>
+ <div class="content" id="content"></div>
+</div>
+</div>
+<div id="modalRoot"></div>
+<div id="printArea"></div>
+<script>
+/* ===================== CORE ===================== */
+const App={};let S=null;let dirty=false;let saveTimer=null;let cur='dashboard';
+const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{const n=parseFloat(String(v??'').replace(/\s/g,'').replace(',','.'));return isNaN(n)?0:n};
+const fmt=n=>(Math.round((+n||0)*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/[\u202f\u00a0]/g,' ')+' DA';
+const fmt0=n=>Math.round(+n||0).toLocaleString('fr-FR').replace(/[\u202f\u00a0]/g,' ');
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>iso(new Date());
+const fmtD=d=>{if(!d)return'';const[y,m,j]=d.split('-');return`${j}/${m}/${y}`};
+const fmtDL=d=>{if(!d)return'';const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})};
+const addDays=(d,n)=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return iso(x)};
+const addMonths=(d,n)=>{const x=new Date(d+'T12:00:00');x.setMonth(x.getMonth()+n);return iso(x)};
+const tmin=t=>{if(!t)return 0;const[h,m]=t.split(':').map(Number);return h*60+(m||0)};
+const mint=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const daysBetween=(a,b)=>Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000);
+const byId=(arr,id)=>arr.find(x=>x.id===id);
+const M=id=>byId(S.membres,id);const E=id=>byId(S.espaces,id);const T=id=>byId(S.tarifs,id);
+const mName=id=>{if(!id)return'';const m=M(id);return m?(m.societe?m.societe+(m.nom?' — '+m.prenom+' '+m.nom:''):(m.prenom+' '+m.nom).trim()):'—'};
+const sel=(opts,val,empty)=>(empty?`<option value="">${empty}</option>`:'')+opts.map(o=>`<option value="${esc(o.v)}"${String(o.v)===String(val)?' selected':''}>${esc(o.l)}</option>`).join('');
+const membreOpts=()=>S.membres.filter(m=>m.statut!=='archivé').sort((a,b)=>mName(a.id).localeCompare(mName(b.id))).map(m=>({v:m.id,l:mName(m.id)}));
+const monthKey=d=>(d||'').slice(0,7);
+const nowMonth=()=>today().slice(0,7);
+const monthLabel=k=>{const[y,m]=k.split('-');return['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'][+m-1]+' '+y.slice(2)};
+
+/* ---- Nombre en lettres (FR) ---- */
+function enLettres(n){
+ const u=['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+ const d=['','dix','vingt','trente','quarante','cinquante','soixante','soixante','quatre-vingt','quatre-vingt'];
+ function c(x){if(x<20)return u[x];if(x<100){let t=Math.floor(x/10),r=x%10;if(t===7||t===9){r+=10;}let s=d[t];if(t===8&&r===0)return'quatre-vingts';if(r===1&&t!==8&&t!==9&&t!==7)return s+' et un';if(r===11&&t===7)return'soixante et onze';return r?s+'-'+u[r]:s;}
+  let h=Math.floor(x/100),r=x%100;let s=h===1?'cent':u[h]+' cent';if(r===0)return h>1?s+'s':s;return s+' '+c(r);}
+ function g(x){if(x===0)return'zéro';let parts=[];const b=Math.floor(x/1e9),mi=Math.floor(x%1e9/1e6),mk=Math.floor(x%1e6/1e3),r=x%1e3;
+  if(b)parts.push(c(b)+(b>1?' milliards':' milliard'));if(mi)parts.push(c(mi)+(mi>1?' millions':' million'));if(mk)parts.push(mk===1?'mille':c(mk)+' mille');if(r)parts.push(c(r));return parts.join(' ');}
+ const e=Math.floor(Math.abs(n)),ce=Math.round((Math.abs(n)-e)*100);
+ let s=g(e)+(e>1?' dinars':' dinar');if(ce)s+=' et '+g(ce)+(ce>1?' centimes':' centime');
+ return s.charAt(0).toUpperCase()+s.slice(1);
+}
+
+/* ---- Storage ---- */
+const Store={
+ async load(){try{if(window.storage){const r=await window.storage.get('hc_state',false);if(r&&r.value){document.getElementById('stoMode').textContent='Données synchronisées';return JSON.parse(r.value)}}}catch(e){}
+  try{const s=localStorage.getItem('hc_state');if(s){document.getElementById('stoMode').textContent='Données locales (navigateur)';return JSON.parse(s)}}catch(e){}return null},
+ async save(){const s=JSON.stringify(S);let ok=false;try{if(window.storage){await window.storage.set('hc_state',s,false);ok=true;document.getElementById('stoMode').textContent='Données synchronisées'}}catch(e){}
+  if(!ok){try{localStorage.setItem('hc_state',s);ok=true;document.getElementById('stoMode').textContent='Données locales (navigateur)'}catch(e){}}
+  if(!ok)document.getElementById('stoMode').textContent='Sauvegarde indisponible — exportez vos données';
+  dirty=false;document.getElementById('saveInd').className='save';document.querySelector('#saveInd span').textContent=ok?'Sauvegardé':'Non sauvegardé';}
+};
+function save(){dirty=true;document.getElementById('saveInd').className='save dirty';document.querySelector('#saveInd span').textContent='Enregistrement…';clearTimeout(saveTimer);saveTimer=setTimeout(()=>Store.save(),500)}
+function log(t){S.journal.unshift({d:new Date().toISOString(),t});if(S.journal.length>400)S.journal.length=400}
+
+/* ---- Default state ---- */
+function defaultState(){
+ const tarifs=[
+  ['PH','Pass Heure',300,'heure','coworking'],['PJ','Pass Journée',1200,'jour','coworking'],['MN','Abonnement Mensuel Nomade',12000,'mois','coworking'],
+  ['BD','Bureau Dédié',22000,'mois','coworking'],['BP','Bureau Privatif',55000,'mois','bureau'],['SR','Salle de réunion',2500,'heure','salle'],
+  ['SF','Salle de formation (journée)',18000,'jour','salle'],['DOM','Domiciliation commerciale',8000,'mois','domiciliation'],['CAS','Casier personnel',2000,'mois','coworking'],
+  ['IE','Pack Incubation Essentiel',30000,'trimestre','incubation'],['IC','Pack Incubation Complet',60000,'trimestre','incubation'],['IP','Pack Incubation Premium',120000,'trimestre','incubation'],
+  ['IMP','Impression A4 (page)',10,'unité','service'],['SEM','Semaine Nomade',5000,'semaine','coworking']
+ ].map(t=>({id:uid(),code:t[0],label:t[1],prix:t[2],unite:t[3],cat:t[4]}));
+ const espaces=[];for(let i=1;i<=12;i++)espaces.push({id:uid(),code:'P'+String(i).padStart(2,'0'),nom:'Poste '+i,type:'poste',cap:1,statut:'libre'});
+ espaces.push({id:uid(),code:'B01',nom:'Bureau privatif',type:'bureau',cap:2,statut:'libre'});
+ espaces.push({id:uid(),code:'S01',nom:'Salle polyvalente',type:'salle',cap:12,statut:'libre',equip:'Vidéoprojecteur, tableau blanc, écran, Wi-Fi fibre, café'});
+ return{v:1,settings:{nom:'Horizon Cowork',raison:'SARL Horizon Digital Service',adresse:'La Fontaine, Aïn Allah, Alger',rc:'16/00-1205459 B 25',nif:'002516120545987',ai:'',nis:'',tel:'+213 (0) XX XX XX XX',email:'contact@horizoncowork.dz',site:'horizoncowork.dz',rib:'',banque:'',tva:19,timbreActif:true,timbreTaux:1,timbreMin:5,timbreMax:2500,horaires:'Dimanche – Jeudi, 8h00 – 20h00',ouv:8,ferm:20,pFac:'FAC',pDev:'DEV',pRec:'REC',pCtr:'CTR',nFac:1,nDev:1,nRec:1,nCtr:1,logo:'',gerant:'Ammar',condPaiement:'Paiement à réception. Abonnements payables du 1er au 5 du mois. Salle : acompte de 50 % à la réservation, solde le jour J.',acompteSalle:50},
+  tarifs,espaces,membres:[],abonnements:[],reservations:[],rdv:[],devis:[],factures:[],paiements:[],docs:[],checkins:[],journal:[]};
+}
+function seedDemo(){
+ const t=c=>S.tarifs.find(x=>x.code===c);const d=today();
+ const m1={id:uid(),type:'societe',civ:'M.',prenom:'Karim',nom:'Benali',societe:'SARL TechNova',rc:'16/00-1234567 B 24',nif:'000116001234567',ai:'',adresse:'Alger',tel:'0550 12 34 56',email:'karim@technova.dz',statut:'actif',source:'Instagram',dateCreation:addDays(d,-40),pieces:['CNI','RC','NIF'],notes:'Start-up incubée Pack Essentiel.'};
+ const m2={id:uid(),type:'particulier',civ:'Mme',prenom:'Sara',nom:'Hamidi',societe:'',rc:'',nif:'',ai:'',adresse:'Chéraga, Alger',tel:'0661 98 76 54',email:'sara.h@gmail.com',statut:'actif',source:'Bouche à oreille',dateCreation:addDays(d,-12),pieces:['CNI'],notes:'Freelance design graphique.'};
+ const m3={id:uid(),type:'societe',civ:'M.',prenom:'Yacine',nom:'Toumi',societe:'EURL Consult+',rc:'16/00-7654321 B 23',nif:'000116007654321',ai:'',adresse:'Hydra, Alger',tel:'0770 11 22 33',email:'contact@consultplus.dz',statut:'prospect',source:'Visite',dateCreation:addDays(d,-3),pieces:[],notes:'Intéressé par domiciliation + bureau privatif. Visite prévue.'};
+ S.membres.push(m1,m2,m3);
+ const p1=S.espaces.find(e=>e.code==='P01'),p2=S.espaces.find(e=>e.code==='P02');
+ const a1={id:uid(),membreId:m1.id,tarifId:t('BD').id,espaceId:p1.id,debut:addDays(d,-40),fin:addMonths(addDays(d,-40),3),montant:22000,periodes:3,statut:'actif',remise:0};
+ const a2={id:uid(),membreId:m2.id,tarifId:t('MN').id,espaceId:'',debut:addDays(d,-12),fin:addMonths(addDays(d,-12),1),montant:12000,periodes:1,statut:'actif',remise:0};
+ S.abonnements.push(a1,a2);p1.statut='occupé';p1.occupantId=m1.id;p1.abonnementId=a1.id;
+ const salle=S.espaces.find(e=>e.type==='salle');
+ S.reservations.push({id:uid(),espaceId:salle.id,membreId:m1.id,client:'',date:d,debut:'10:00',fin:'12:00',objet:'Réunion investisseurs',participants:6,statut:'confirmée',montant:0,acompte:0,notes:'Inclus dans les 5h/mois du Bureau Dédié'});
+ S.reservations.push({id:uid(),espaceId:salle.id,membreId:'',client:'Cabinet Amrani',tel:'0555 00 11 22',date:addDays(d,2),debut:'14:00',fin:'17:00',objet:'Formation Excel — 8 pers.',participants:8,statut:'en attente',montant:7500,acompte:3750,notes:''});
+ S.rdv.push({id:uid(),titre:'Visite de l\'espace',type:'visite',date:addDays(d,1),heure:'11:00',duree:30,contact:'Yacine Toumi (EURL Consult+)',tel:'0770 11 22 33',membreId:m3.id,statut:'planifié',notes:'Bureau privatif + domiciliation'});
+ S.rdv.push({id:uid(),titre:'Coaching mensuel TechNova',type:'coaching',date:addDays(d,3),heure:'15:00',duree:60,contact:'Karim Benali',tel:'',membreId:m1.id,statut:'planifié',notes:''});
+ const f=App.makeFacture({membreId:m1.id,date:addDays(d,-40),objet:'Bureau Dédié — 3 mois',lignes:[{desc:'Bureau Dédié — abonnement mensuel (P01)',qte:3,pu:22000,tva:S.settings.tva}],modePaiement:'Virement'});f.statut='émise';S.factures.push(f);
+ App.addPaiement({factureId:f.id,membreId:m1.id,date:addDays(d,-38),montant:f.totaux.net,mode:'Virement',ref:'VIR-2201'});
+ const f2=App.makeFacture({membreId:m2.id,date:addDays(d,-12),objet:'Abonnement Mensuel Nomade',lignes:[{desc:'Abonnement Mensuel Nomade',qte:1,pu:12000,tva:S.settings.tva}],modePaiement:'Espèces'});f2.statut='émise';S.factures.push(f2);
+ App.addPaiement({factureId:f2.id,membreId:m2.id,date:addDays(d,-12),montant:6000,mode:'Espèces',ref:''});
+ const dv={id:uid(),numero:App.nextNum('Dev'),membreId:m3.id,date:d,validite:addDays(d,15),objet:'Bureau privatif + domiciliation',lignes:[{desc:'Bureau Privatif — mensuel',qte:1,pu:55000,tva:S.settings.tva},{desc:'Domiciliation commerciale — mensuel',qte:1,pu:8000,tva:S.settings.tva}],remise:5,statut:'envoyé',notes:'Remise de bienvenue 5 %.'};dv.totaux=App.calc(dv);S.devis.push(dv);
+ log('Données de démonstration chargées');
+}
+
+/* ---- Modal & UI helpers ---- */
+function modal(title,body,opts={}){const root=document.getElementById('modalRoot');
+ const foot=opts.foot!==undefined?opts.foot:`<button class="btn" onclick="closeModal()">Annuler</button><button class="btn p" id="mdSave">${esc(opts.saveLabel||'Enregistrer')}</button>`;
+ root.innerHTML=`<div class="ov" onclick="if(event.target===this)closeModal()"><div class="md ${opts.size||''}"><div class="md-h"><h2>${esc(title)}</h2><button class="x" onclick="closeModal()">×</button></div><div class="md-b">${body}</div>${foot?`<div class="md-f">${foot}</div>`:''}</div></div>`;
+ if(opts.onSave){document.getElementById('mdSave').onclick=()=>opts.onSave()}
+ const fi=root.querySelector('input:not([type=checkbox]),select');if(fi)setTimeout(()=>fi.focus(),50);
+ document.onkeydown=e=>{if(e.key==='Escape')closeModal()}}
+function closeModal(){document.getElementById('modalRoot').innerHTML='';document.onkeydown=null}
+function getForm(id){const o={};const f=document.getElementById(id);f.querySelectorAll('[name]').forEach(el=>{if(el.type==='checkbox'){if(el.name.endsWith('[]')){const k=el.name.slice(0,-2);o[k]=o[k]||[];if(el.checked)o[k].push(el.value)}else o[el.name]=el.checked}else o[el.name]=el.value});return o}
+function toast(t,err){const d=document.createElement('div');d.className='toast'+(err?' err':'');d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+function confirmDel(msg,cb){modal('Confirmation',`<p>${esc(msg)}</p>`,{saveLabel:'Confirmer',onSave:()=>{closeModal();cb()}})}
+const fld=(label,inner)=>`<div class="fl"><label>${label}</label>${inner}</div>`;
+const inp=(name,val='',type='text',extra='')=>`<input name="${name}" type="${type}" value="${esc(val)}" ${extra}>`;
+
+/* ---- Business calc ---- */
+App.calc=doc=>{const ht=(doc.lignes||[]).reduce((s,l)=>s+num(l.qte)*num(l.pu),0);const rem=ht*num(doc.remise)/100;const htn=ht-rem;
+ let tva=0;(doc.lignes||[]).forEach(l=>{const lht=num(l.qte)*num(l.pu)*(1-num(doc.remise)/100);tva+=lht*num(l.tva??S.settings.tva)/100});
+ const r2=x=>Math.round(x*100)/100;const ttc=r2(htn+tva);let timbre=0;if(S.settings.timbreActif&&doc.modePaiement==='Espèces'&&doc.timbre!==false){timbre=Math.min(Math.max(ttc*S.settings.timbreTaux/100,S.settings.timbreMin),S.settings.timbreMax)}
+ timbre=r2(timbre);return{ht:r2(ht),rem:r2(rem),htn:r2(htn),tva:r2(tva),ttc,timbre,net:r2(ttc+timbre)}};
+App.nextNum=k=>{const y=new Date().getFullYear();const p=S.settings['p'+k];const n=S.settings['n'+k]++;return`${p}-${y}-${String(n).padStart(4,'0')}`};
+App.makeFacture=o=>{const f={id:uid(),numero:App.nextNum('Fac'),membreId:o.membreId||'',client:o.client||'',date:o.date||today(),echeance:o.echeance||addDays(o.date||today(),15),objet:o.objet||'',lignes:o.lignes||[],remise:o.remise||0,modePaiement:o.modePaiement||'Espèces',statut:'brouillon',notes:o.notes||'',devisId:o.devisId||'',reservationId:o.reservationId||'',abonnementId:o.abonnementId||''};f.totaux=App.calc(f);return f};
+App.paidOf=fid=>S.paiements.filter(p=>p.factureId===fid).reduce((s,p)=>s+p.montant,0);
+App.resteOf=f=>Math.max(0,Math.round((f.totaux.net-App.paidOf(f.id))*100)/100);
+App.refreshStatut=f=>{if(f.statut==='annulée'||f.statut==='brouillon')return;const p=App.paidOf(f.id);f.statut=p>=f.totaux.net-0.01?'payée':p>0?'partielle':'émise'};
+App.addPaiement=o=>{const p={id:uid(),numero:App.nextNum('Rec'),factureId:o.factureId||'',membreId:o.membreId||'',client:o.client||'',date:o.date||today(),montant:num(o.montant),mode:o.mode||'Espèces',ref:o.ref||'',note:o.note||''};S.paiements.push(p);const f=byId(S.factures,p.factureId);if(f)App.refreshStatut(f);return p};
+App.abStatut=a=>{if(a.statut==='résilié')return'résilié';const d=today();if(a.debut>d)return'à venir';if(a.fin<d)return'expiré';return'actif'};
+App.occupation=()=>{const postes=S.espaces.filter(e=>e.type==='poste');const occ=postes.filter(e=>e.statut==='occupé').length;return{postes:postes.length,occ,taux:postes.length?Math.round(occ/postes.length*100):0}};
+App.conflict=(espaceId,date,debut,fin,exclId)=>S.reservations.find(r=>r.id!==exclId&&r.espaceId===espaceId&&r.date===date&&r.statut!=='annulée'&&tmin(debut)<tmin(r.fin)&&tmin(fin)>tmin(r.debut));
+
+const STAT={actif:'t-gr',prospect:'t-bl',suspendu:'t-or',archivé:'t-gy',payée:'t-gr',partielle:'t-or',émise:'t-bl',brouillon:'t-gy',annulée:'t-rd',accepté:'t-gr',envoyé:'t-bl',refusé:'t-rd',expiré:'t-rd',résilié:'t-gy','à venir':'t-bl',confirmée:'t-gr','en attente':'t-or',terminée:'t-gy',planifié:'t-bl',réalisé:'t-gr','annulé':'t-rd',libre:'t-gr','occupé':'t-na','maintenance':'t-or'};
+const tag=s=>`<span class="tag ${STAT[s]||'t-gy'}">${esc(s)}</span>`;
+
+/* ---- Router ---- */
+const ICONS={dash:'<path d="M3 3h7v7H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 14h7v7H3z"/>',cal:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',res:'<path d="M4 6h16v12H4zM4 10h16M9 6v12"/>',rdv:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',mem:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-5-6.3"/>',esp:'<path d="M3 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M3 21h18M15 8h4a2 2 0 0 1 2 2v11M7 7h2M7 11h2M7 15h2"/>',abo:'<path d="M20 12a8 8 0 1 1-3-6.2M20 4v5h-5"/>',dev:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5"/>',fac:'<path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/>',pay:'<rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/>',doc:'<path d="M4 4h11l5 5v11a2 2 0 0 1-2 2H4zM15 4v5h5M8 14h8M8 18h6"/>',rep:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',set:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'};
+const ico=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
+const PAGES=[
+ {sec:'Pilotage'},{id:'dashboard',l:'Tableau de bord',i:'dash',t:'Tableau de bord'},{id:'agenda',l:'Agenda',i:'cal',t:'Agenda',s:'Réservations de salle et rendez-vous, semaine par semaine'},
+ {sec:'Espace'},{id:'reservations',l:'Réservations',i:'res',t:'Réservations',s:'Salle de réunion, salle de formation, postes et bureaux à l\'usage',c:()=>S.reservations.filter(r=>r.date>=today()&&r.statut!=='annulée').length},{id:'rdv',l:'Rendez-vous',i:'rdv',t:'Rendez-vous',s:'Visites, coaching, réunions internes',c:()=>S.rdv.filter(r=>r.date>=today()&&r.statut==='planifié').length},{id:'espaces',l:'Postes & bureaux',i:'esp',t:'Postes & bureaux',s:'Plan d\'occupation, attribution et libération des espaces'},
+ {sec:'Clients'},{id:'membres',l:'Membres & clients',i:'mem',t:'Membres & clients',s:'Ouverture de compte, fiches, pièces et historique',c:()=>S.membres.filter(m=>m.statut==='actif').length},{id:'abonnements',l:'Abonnements',i:'abo',t:'Abonnements',s:'Suivi, renouvellement et résiliation',c:()=>S.abonnements.filter(a=>App.abStatut(a)==='actif'&&daysBetween(today(),a.fin)<=7).length},
+ {sec:'Facturation'},{id:'devis',l:'Devis',i:'dev',t:'Devis',s:'Propositions commerciales et conversion en facture'},{id:'factures',l:'Factures',i:'fac',t:'Factures',s:'Émission, suivi des paiements, impression',c:()=>S.factures.filter(f=>['émise','partielle'].includes(f.statut)).length},{id:'paiements',l:'Encaissements',i:'pay',t:'Encaissements',s:'Caisse, reçus et journal des paiements'},{id:'documents',l:'Documents',i:'doc',t:'Documents',s:'Contrats, attestations et conventions à imprimer'},
+ {sec:'Direction'},{id:'rapports',l:'Rapports',i:'rep',t:'Rapports',s:'Chiffre d\'affaires, occupation, impayés'},{id:'parametres',l:'Paramètres',i:'set',t:'Paramètres',s:'Identité, tarifs, TVA, numérotation, sauvegarde'}];
+function renderNav(){document.getElementById('nav').innerHTML=PAGES.map(p=>p.sec?`<div class="nav-sec">${p.sec}</div>`:`<a class="${cur===p.id?'on':''}" onclick="go('${p.id}')">${ico(p.i)}${p.l}${p.c&&p.c()?`<span class="cnt">${p.c()}</span>`:''}</a>`).join('')}
+function go(id,arg){cur=id;App._arg=arg;render()}
+function render(){renderNav();const p=PAGES.find(x=>x.id===cur);document.getElementById('pTitle').textContent=p.t;document.getElementById('pSub').textContent=p.s||'';document.getElementById('content').innerHTML=App['page_'+cur](App._arg);window.scrollTo(0,0)}
+/* ===================== DASHBOARD ===================== */
+App.page_dashboard=()=>{const d=today(),mk=nowMonth();
+ const caM=S.paiements.filter(p=>monthKey(p.date)===mk).reduce((s,p)=>s+p.montant,0);
+ const impayes=S.factures.filter(f=>['émise','partielle'].includes(f.statut)).reduce((s,f)=>s+App.resteOf(f),0);
+ const oc=App.occupation();const bureaux=S.espaces.filter(e=>e.type==='bureau');const bo=bureaux.filter(e=>e.statut==='occupé').length;
+ const resT=S.reservations.filter(r=>r.date===d&&r.statut!=='annulée');const rdvT=S.rdv.filter(r=>r.date===d&&r.statut==='planifié');
+ const exp=S.abonnements.filter(a=>App.abStatut(a)==='actif'&&daysBetween(d,a.fin)<=7);
+ const echues=S.factures.filter(f=>['émise','partielle'].includes(f.statut)&&f.echeance<d);
+ const devAtt=S.devis.filter(x=>['envoyé','brouillon'].includes(x.statut)&&x.validite>=d);
+ const alerts=[...exp.map(a=>`<div class="alert"><span>Abonnement <b>${esc(mName(a.membreId))}</b> expire le ${fmtD(a.fin)}${daysBetween(d,a.fin)<0?' (dépassé)':''}</span><span class="sp"></span><button class="btn s" onclick="App.renewAb('${a.id}')">Renouveler</button></div>`),
+  ...echues.map(f=>`<div class="alert r"><span>Facture <b>${f.numero}</b> — ${esc(mName(f.membreId)||f.client)} : ${fmt(App.resteOf(f))} en retard depuis le ${fmtD(f.echeance)}</span><span class="sp"></span><button class="btn s" onclick="App.payModal('${f.id}')">Encaisser</button></div>`),
+  ...S.reservations.filter(r=>r.statut==='en attente'&&r.date>=d).map(r=>`<div class="alert b"><span>Réservation à confirmer : <b>${esc(r.objet||'Salle')}</b> le ${fmtD(r.date)} ${r.debut}–${r.fin} (${esc(mName(r.membreId)||r.client)})</span><span class="sp"></span><button class="btn s" onclick="App.resModal('${r.id}')">Ouvrir</button></div>`),
+  ...devAtt.map(x=>`<div class="alert b"><span>Devis <b>${x.numero}</b> ${esc(mName(x.membreId)||x.client)} en attente de réponse (${fmt(x.totaux.net)})</span><span class="sp"></span><button class="btn s" onclick="App.devisModal('${x.id}')">Ouvrir</button></div>`)];
+ const jour=[...resT.map(r=>({t:r.debut,h:`${esc(E(r.espaceId)?.nom)} — ${esc(r.objet||'Réservation')}`,s:`${esc(mName(r.membreId)||r.client)} · ${r.debut}–${r.fin}`,st:r.statut,f:`App.resModal('${r.id}')`})),...rdvT.map(r=>({t:r.heure,h:esc(r.titre),s:`${esc(r.contact)} · ${r.duree} min`,st:r.type,f:`App.rdvModal('${r.id}')`}))].sort((a,b)=>a.t.localeCompare(b.t));
+ return`<div class="grid g6" style="margin-bottom:16px">
+ <div class="kpi ok"><div class="l">Encaissé ce mois</div><div class="v">${fmt0(caM)} DA</div><div class="d">${S.paiements.filter(p=>monthKey(p.date)===mk).length} encaissements</div></div>
+ <div class="kpi ${impayes>0?'warn':''}"><div class="l">Reste à encaisser</div><div class="v">${fmt0(impayes)} DA</div><div class="d">${S.factures.filter(f=>['émise','partielle'].includes(f.statut)).length} factures ouvertes</div></div>
+ <div class="kpi"><div class="l">Occupation open space</div><div class="v">${oc.taux} %</div><div class="d">${oc.occ} / ${oc.postes} postes</div></div>
+ <div class="kpi"><div class="l">Bureaux privatifs</div><div class="v">${bo} / ${bureaux.length}</div><div class="d">occupés</div></div>
+ <div class="kpi gold"><div class="l">Salle aujourd'hui</div><div class="v">${resT.length}</div><div class="d">réservation${resT.length>1?'s':''}</div></div>
+ <div class="kpi"><div class="l">Rendez-vous</div><div class="v">${rdvT.length}</div><div class="d">aujourd'hui</div></div></div>
+ <div class="grid" style="grid-template-columns:1.6fr 1fr">
+ <div><div class="card" style="margin-bottom:16px"><h3>Plan de l'espace <span class="sp"></span><span class="mini">${fmtDL(d)}</span><button class="btn s" onclick="go('espaces')">Gérer</button></h3>${App.spaceMap()}
+  <div class="lg"><span><i style="background:#fff;border:1px solid var(--line)"></i>Libre</span><span><i style="background:var(--navy)"></i>Occupé (abonnement)</span><span><i style="background:var(--gold2);border:1px solid var(--gold)"></i>Réservé aujourd'hui</span></div></div>
+  <div class="card"><h3>Alertes & actions <span class="sp"></span><span class="mini">${alerts.length} élément${alerts.length>1?'s':''}</span></h3>${alerts.length?alerts.join(''):'<div class="empty">Rien à signaler. Tout est à jour.</div>'}</div></div>
+ <div><div class="card" style="margin-bottom:16px"><h3>Aujourd'hui <span class="sp"></span><button class="btn s" onclick="App.resModal()">+ Réservation</button><button class="btn s" onclick="App.rdvModal()">+ RDV</button></h3>
+  ${jour.length?`<div class="list">${jour.map(j=>`<div class="li" style="cursor:pointer" onclick="${j.f}"><span class="t">${j.t}</span><div class="sp"><div style="font-weight:700">${j.h}</div><div class="mini">${j.s}</div></div>${tag(j.st)}</div>`).join('')}</div>`:'<div class="empty"><b>Journée libre</b>Aucune réservation ni rendez-vous.</div>'}</div>
+  <div class="card" style="margin-bottom:16px"><h3>Caisse rapide</h3><div class="btns"><button class="btn g" onclick="App.quickSale('PH')">Pass Heure · 300 DA</button><button class="btn g" onclick="App.quickSale('PJ')">Pass Journée · 1 200 DA</button><button class="btn" onclick="App.quickSale('IMP')">Impressions</button><button class="btn" onclick="App.quickSale()">Autre vente</button></div>
+  <div class="mini" style="margin-top:10px">${S.checkins.filter(c=>c.date===d).length} passage${S.checkins.filter(c=>c.date===d).length>1?'s':''} enregistré${S.checkins.filter(c=>c.date===d).length>1?'s':''} aujourd'hui — ${fmt(S.paiements.filter(p=>p.date===d).reduce((s,p)=>s+p.montant,0))} encaissés (tous modes)</div></div>
+  <div class="card"><h3>Raccourcis</h3><div class="btns"><button class="btn p" onclick="App.membreModal()">Ouvrir un compte</button><button class="btn" onclick="App.devisModal()">Nouveau devis</button><button class="btn" onclick="App.factureModal()">Nouvelle facture</button><button class="btn" onclick="go('documents')">Générer un document</button></div></div></div></div>`};
+
+App.spaceMap=()=>{const d=today();return`<div class="map">${S.espaces.map(e=>{const resNow=e.type==='salle'&&S.reservations.some(r=>r.espaceId===e.id&&r.date===d&&r.statut!=='annulée');
+ const cls=e.statut==='occupé'?'occ':resNow?'res':'';const size=e.type==='salle'?'wide':e.type==='bureau'?'big':'';
+ const sub=e.statut==='occupé'?mName(e.occupantId):e.statut==='maintenance'?'Maintenance':resNow?'Réservée aujourd\'hui':e.type==='salle'?`${e.cap} places · libre`:'Libre';
+ return`<div class="sp-c ${cls} ${size}" onclick="App.espaceModal('${e.id}')"><span class="st"></span><b>${esc(e.code)} · ${esc(e.nom)}</b><small>${esc(sub)}</small></div>`}).join('')}</div>`};
+
+/* ---- Quick sale (pass heure / journée) ---- */
+App.quickSale=code=>{const t=code?S.tarifs.find(x=>x.code===code):null;
+ modal('Encaisser un pass / une vente',`<form id="fQ" class="f f2" onsubmit="return false">
+ ${fld('Client (membre existant)',`<select name="membreId" onchange="document.querySelector('#fQ [name=client]').disabled=!!this.value">${sel(membreOpts(),'','— Client de passage —')}</select>`)}
+ ${fld('Nom du client de passage',inp('client','','text','placeholder="Nom / téléphone"'))}
+ ${fld('Prestation',`<select name="tarifId" onchange="App.qsPU()">${sel(S.tarifs.filter(x=>['coworking','service','salle'].includes(x.cat)).map(x=>({v:x.id,l:`${x.label} — ${fmt0(x.prix)} DA / ${x.unite}`})),t?t.id:'')}</select>`)}
+ ${fld('Quantité',inp('qte',1,'number','min="1" step="1" oninput="App.qsTot()"'))}
+ ${fld('Prix unitaire (DA)',inp('pu',t?t.prix:'','number','step="1" oninput="App.qsTot()"'))}
+ ${fld('Mode de paiement',`<select name="mode">${sel(['Espèces','CIB / Edahabia','Virement','Chèque','BaridiMob'].map(x=>({v:x,l:x})),'Espèces')}</select>`)}
+ <div class="fs">Total</div><div style="grid-column:1/-1" class="big-num" id="qsTot">—</div>
+ <div style="grid-column:1/-1" class="hint">Crée une facture payée, un reçu et enregistre le passage dans le registre du jour. TVA ${S.settings.tva} % incluse dans le prix affiché ; le droit de timbre s'ajoute en espèces.</div></form>`,
+ {saveLabel:'Encaisser & imprimer le reçu',onSave:()=>{const o=getForm('fQ');const tf=T(o.tarifId);const qte=num(o.qte)||1,pu=num(o.pu);if(!pu)return toast('Prix manquant',true);
+  const puHT=pu/(1+S.settings.tva/100);const f=App.makeFacture({membreId:o.membreId,client:o.client,objet:tf.label,lignes:[{desc:tf.label,qte,pu:Math.round(puHT*10000)/10000,tva:S.settings.tva}],modePaiement:o.mode,echeance:today()});f.statut='émise';S.factures.push(f);
+  const p=App.addPaiement({factureId:f.id,membreId:o.membreId,client:o.client,montant:f.totaux.net,mode:o.mode});S.checkins.push({id:uid(),date:today(),heure:new Date().toTimeString().slice(0,5),nom:o.membreId?mName(o.membreId):o.client,type:tf.label,qte});
+  log(`Encaissement rapide ${tf.label} ×${qte} — ${fmt(f.totaux.net)}`);save();closeModal();toast('Encaissé — '+fmt(f.totaux.net));render();App.printDoc('recu',p.id)}});
+ App.qsTot()};
+App.qsPU=()=>{const f=document.getElementById('fQ');const t=T(f.tarifId.value);f.pu.value=t.prix;App.qsTot()};
+App.qsTot=()=>{const f=document.getElementById('fQ');const tot=num(f.qte.value)*num(f.pu.value);document.getElementById('qsTot').textContent=fmt(tot)};
+
+/* ===================== AGENDA ===================== */
+App.agWeek=null;
+App.page_agenda=()=>{if(!App.agWeek){const d=new Date();d.setDate(d.getDate()-d.getDay());App.agWeek=iso(d)}
+ const days=[...Array(7)].map((_,i)=>addDays(App.agWeek,i));const ouv=S.settings.ouv,ferm=S.settings.ferm;const H=ferm-ouv;const px=720/H;
+ const filt=App._agFilter||'all';const salles=S.espaces.filter(e=>e.type==='salle');
+ const col=d=>{const items=[];S.reservations.filter(r=>r.date===d&&r.statut!=='annulée'&&(filt==='all'||filt==='res'||filt===r.espaceId)).forEach(r=>{const e=E(r.espaceId);items.push({s:tmin(r.debut),e:tmin(r.fin),cls:'salle'+(r.statut==='en attente'?' att':''),h:esc(r.objet||e?.nom),sub:esc((mName(r.membreId)||r.client)+' · '+e?.code),f:`App.resModal('${r.id}')`})});
+  if(filt==='all'||filt==='rdv')S.rdv.filter(r=>r.date===d&&r.statut!=='annulé').forEach(r=>items.push({s:tmin(r.heure),e:tmin(r.heure)+(+r.duree||30),cls:'rdv',h:esc(r.titre),sub:esc(r.contact),f:`App.rdvModal('${r.id}')`}));
+  const slots=[...Array(H)].map((_,i)=>`<div class="slot" style="top:${i*px}px" onclick="App.resModal(null,{date:'${d}',debut:'${mint((ouv+i)*60)}',fin:'${mint((ouv+i+1)*60)}'})" title="Réserver ${mint((ouv+i)*60)}"></div>`).join('');
+  return`<div class="col">${slots}${items.map(it=>{const top=Math.max(0,(it.s-ouv*60)/60*px),h=Math.max(22,(it.e-it.s)/60*px);return`<div class="ev ${it.cls}" style="top:${top}px;height:${h}px" onclick="event.stopPropagation();${it.f}"><b>${mint(it.s)}–${mint(it.e)} ${it.h}</b>${it.sub}</div>`}).join('')}</div>`};
+ return`<div class="bar"><button class="btn" onclick="App.agWeek=addDays(App.agWeek,-7);render()">‹ Semaine préc.</button><button class="btn" onclick="App.agWeek=null;render()">Aujourd'hui</button><button class="btn" onclick="App.agWeek=addDays(App.agWeek,7);render()">Semaine suiv. ›</button>
+ <b style="margin-left:6px">Semaine du ${fmtD(days[0])} au ${fmtD(days[6])}</b><span class="sp"></span>
+ <select onchange="App._agFilter=this.value;render()">${sel([{v:'all',l:'Tout afficher'},{v:'res',l:'Réservations seulement'},{v:'rdv',l:'Rendez-vous seulement'},...salles.map(s=>({v:s.id,l:s.nom}))],filt)}</select>
+ <button class="btn p" onclick="App.resModal()">+ Réservation</button><button class="btn" onclick="App.rdvModal()">+ Rendez-vous</button></div>
+ <div class="ag"><div class="hd tc"></div>${days.map(d=>{const dt=new Date(d+'T12:00:00');return`<div class="hd ${d===today()?'td':''}">${['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][dt.getDay()]} ${dt.getDate()}<small>${dt.toLocaleDateString('fr-FR',{month:'short'})}</small></div>`}).join('')}
+ <div class="tcol">${[...Array(H)].map((_,i)=>`<div>${ouv+i}h</div>`).join('')}</div>${days.map(col).join('')}</div>
+ <div class="lg"><span><i style="background:var(--gold2);border:1px solid var(--gold)"></i>Salle réservée</span><span><i style="background:var(--gold2);border:1px dashed var(--gold)"></i>En attente de confirmation</span><span><i style="background:var(--or2);border:1px solid var(--or)"></i>Rendez-vous</span><span>Cliquez sur un créneau vide pour réserver.</span></div>`};
+
+/* ===================== RÉSERVATIONS ===================== */
+App.page_reservations=()=>{const f=App._resF||'avenir';const d=today();
+ let list=S.reservations.slice().sort((a,b)=>(b.date+b.debut).localeCompare(a.date+a.debut));
+ if(f==='avenir')list=list.filter(r=>r.date>=d&&r.statut!=='annulée').reverse();else if(f==='passe')list=list.filter(r=>r.date<d);else if(f==='attente')list=list.filter(r=>r.statut==='en attente');
+ return`<div class="bar"><select onchange="App._resF=this.value;render()">${sel([{v:'avenir',l:'À venir'},{v:'attente',l:'En attente de confirmation'},{v:'passe',l:'Passées'},{v:'all',l:'Toutes'}],f)}</select><span class="sp"></span><button class="btn p" onclick="App.resModal()">+ Nouvelle réservation</button></div>
+ <div class="card tw">${list.length?`<table><tr><th>Date</th><th>Créneau</th><th>Espace</th><th>Client</th><th>Objet</th><th class="r">Pers.</th><th class="r">Montant</th><th class="r">Acompte</th><th>Statut</th><th></th></tr>${list.map(r=>`<tr class="rowc" onclick="App.resModal('${r.id}')"><td>${fmtD(r.date)}</td><td>${r.debut}–${r.fin}</td><td>${esc(E(r.espaceId)?.nom)}</td><td>${esc(mName(r.membreId)||r.client)}</td><td>${esc(r.objet)}</td><td class="r">${r.participants||''}</td><td class="r">${r.montant?fmt(r.montant):'inclus'}</td><td class="r">${r.acompte?fmt(r.acompte):'—'}</td><td>${tag(r.statut)}</td><td>${r.factureId?`<span class="tag t-gy">Facturée</span>`:r.montant?`<button class="btn s" onclick="event.stopPropagation();App.factureRes('${r.id}')">Facturer</button>`:''}</td></tr>`).join('')}</table>`:'<div class="empty"><b>Aucune réservation</b>Créez-en une depuis l\'agenda ou le bouton ci-dessus.</div>'}</div>`};
+App.resModal=(id,pre={})=>{App._editRes=id||null;const r=id?byId(S.reservations,id):{espaceId:S.espaces.find(e=>e.type==='salle')?.id,date:pre.date||today(),debut:pre.debut||'09:00',fin:pre.fin||'10:00',statut:'confirmée',participants:'',montant:'',acompte:''};
+ modal(id?'Réservation':'Nouvelle réservation',`<form id="fR" class="f f2" onsubmit="return false">
+ ${fld('Espace',`<select name="espaceId" onchange="App.resCalc()">${sel(S.espaces.filter(e=>e.statut!=='maintenance').map(e=>({v:e.id,l:`${e.code} · ${e.nom} (${e.type}${e.cap>1?', '+e.cap+' pl.':''})`})),r.espaceId)}</select>`)}
+ ${fld('Statut',`<select name="statut">${sel(['confirmée','en attente','terminée','annulée'].map(x=>({v:x,l:x})),r.statut)}</select>`)}
+ ${fld('Membre',`<select name="membreId" onchange="App.resCalc()">${sel(membreOpts(),r.membreId,'— Client externe —')}</select>`)}
+ ${fld('Client externe (nom / société)',inp('client',r.client||''))}
+ ${fld('Téléphone',inp('tel',r.tel||''))}${fld('Nombre de participants',inp('participants',r.participants||'','number','min="1"'))}
+ ${fld('Date',inp('date',r.date,'date','onchange="App.resCalc()"'))}<div class="f f2" style="gap:8px">${fld('Début',inp('debut',r.debut,'time','onchange="App.resCalc()"'))}${fld('Fin',inp('fin',r.fin,'time','onchange="App.resCalc()"'))}</div>
+ ${fld('Objet',inp('objet',r.objet||'','text','placeholder="Réunion, formation, atelier…"'))}${fld('Tarif appliqué',`<select name="tarifId" onchange="App.resCalc()">${sel(S.tarifs.filter(t=>t.cat==='salle').map(t=>({v:t.id,l:`${t.label} — ${fmt0(t.prix)} DA / ${t.unite}`})),r.tarifId||S.tarifs.find(t=>t.code==='SR')?.id,'Inclus / gratuit')}</select>`)}
+ ${fld('Montant (DA, 0 si inclus dans l\'abonnement)',inp('montant',r.montant??'','number','step="1"'))}${fld(`Acompte demandé (${S.settings.acompteSalle} % non-abonnés)`,inp('acompte',r.acompte??'','number','step="1"'))}
+ <div style="grid-column:1/-1">${fld('Notes',`<textarea name="notes">${esc(r.notes||'')}</textarea>`)}</div><div id="resWarn" style="grid-column:1/-1"></div></form>`,
+ {size:'w',foot:`${id?`<button class="btn d" onclick="App.delRes('${id}')">Supprimer</button>`:''}<span style="flex:1"></span><button class="btn" onclick="closeModal()">Annuler</button>${id&&r.montant?`<button class="btn" onclick="App.printDoc('convention','${id}')">Imprimer la convention</button>`:''}<button class="btn p" id="mdSave">Enregistrer</button>`,
+ onSave:()=>{const o=getForm('fR');if(!o.date||!o.debut||!o.fin)return toast('Date et créneau requis',true);if(tmin(o.fin)<=tmin(o.debut))return toast('L\'heure de fin doit être après le début',true);
+  const c=App.conflict(o.espaceId,o.date,o.debut,o.fin,id);if(c&&o.statut!=='annulée')return toast(`Conflit : ${E(c.espaceId).nom} déjà réservée ${c.debut}–${c.fin} (${mName(c.membreId)||c.client})`,true);
+  const obj={...(r.id?r:{id:uid()}),...o,participants:num(o.participants),montant:num(o.montant),acompte:num(o.acompte)};
+  if(id)Object.assign(r,obj);else S.reservations.push(obj);log(`Réservation ${E(obj.espaceId).nom} ${fmtD(obj.date)} ${obj.debut}–${obj.fin}`);save();closeModal();toast('Réservation enregistrée');render()}});
+ if(!id)App.resCalc(true)};
+App.resCalc=(force)=>{const f=document.getElementById('fR');if(!f)return;const e=E(f.espaceId.value),t=T(f.tarifId.value);const h=(tmin(f.fin.value)-tmin(f.debut.value))/60;
+ const c=App.conflict(f.espaceId.value,f.date.value,f.debut.value,f.fin.value,App._editRes);document.getElementById('resWarn').innerHTML=c?`<div class="alert r">Créneau déjà pris : ${c.debut}–${c.fin} — ${esc(mName(c.membreId)||c.client)}</div>`:'';
+ if(!t||h<=0){return}let m=t.unite==='heure'?h*t.prix:t.prix;const memb=M(f.membreId.value);const abo=memb&&S.abonnements.find(a=>a.membreId===memb.id&&App.abStatut(a)==='actif');
+ const hint=abo?`<div class="alert b">Abonné (${esc(T(abo.tarifId)?.label)}) : ${T(abo.tarifId)?.code==='BD'||T(abo.tarifId)?.code==='BP'?'5 h':T(abo.tarifId)?.code==='MN'?'2 h':'0 h'} de salle incluses par mois — mettez 0 si le créneau est couvert.</div>`:'';
+ f.montant.value=Math.round(m);f.acompte.value=memb?0:Math.round(m*S.settings.acompteSalle/100);document.getElementById('resWarn').innerHTML+=hint};
+App.delRes=id=>confirmDel('Supprimer cette réservation ?',()=>{S.reservations=S.reservations.filter(r=>r.id!==id);save();closeModal();render()});
+App.factureRes=id=>{const r=byId(S.reservations,id);const e=E(r.espaceId);const h=(tmin(r.fin)-tmin(r.debut))/60;
+ const f=App.makeFacture({membreId:r.membreId,client:r.client,objet:`Location ${e.nom} — ${fmtD(r.date)}`,lignes:[{desc:`Mise à disposition ${e.nom} le ${fmtD(r.date)} de ${r.debut} à ${r.fin} (${h} h) — ${r.objet||''}`,qte:1,pu:Math.round(r.montant/(1+S.settings.tva/100)*10000)/10000,tva:S.settings.tva}],reservationId:r.id,echeance:r.date});
+ S.factures.push(f);r.factureId=f.id;save();App.factureModal(f.id)};
+
+/* ===================== RENDEZ-VOUS ===================== */
+App.page_rdv=()=>{const d=today();const list=S.rdv.slice().sort((a,b)=>(a.date+a.heure).localeCompare(b.date+b.heure));const av=list.filter(r=>r.date>=d&&r.statut==='planifié'),pa=list.filter(r=>!(r.date>=d&&r.statut==='planifié')).reverse();
+ const row=r=>`<tr class="rowc" onclick="App.rdvModal('${r.id}')"><td>${fmtD(r.date)}</td><td>${r.heure} (${r.duree} min)</td><td>${tag(r.type)}</td><td><b>${esc(r.titre)}</b></td><td>${esc(r.contact)}<div class="mini">${esc(r.tel||'')}</div></td><td>${esc(r.notes||'')}</td><td>${tag(r.statut)}</td></tr>`;
+ return`<div class="bar"><span class="hint">Visites de prospects, coaching des incubés, réunions d'équipe. Les rendez-vous apparaissent aussi dans l'agenda.</span><span class="sp"></span><button class="btn p" onclick="App.rdvModal()">+ Nouveau rendez-vous</button></div>
+ <div class="card" style="margin-bottom:16px"><h3>À venir</h3><div class="tw">${av.length?`<table><tr><th>Date</th><th>Heure</th><th>Type</th><th>Titre</th><th>Contact</th><th>Notes</th><th>Statut</th></tr>${av.map(row).join('')}</table>`:'<div class="empty">Aucun rendez-vous planifié.</div>'}</div></div>
+ <div class="card"><h3>Historique</h3><div class="tw">${pa.length?`<table><tr><th>Date</th><th>Heure</th><th>Type</th><th>Titre</th><th>Contact</th><th>Notes</th><th>Statut</th></tr>${pa.map(row).join('')}</table>`:'<div class="empty">—</div>'}</div></div>`};
+App.rdvModal=id=>{const r=id?byId(S.rdv,id):{date:today(),heure:'10:00',duree:30,type:'visite',statut:'planifié'};
+ modal(id?'Rendez-vous':'Nouveau rendez-vous',`<form id="fV" class="f f2" onsubmit="return false">
+ <div style="grid-column:1/-1">${fld('Titre',inp('titre',r.titre||'','text','placeholder="Visite de l\'espace, coaching, réunion…" required'))}</div>
+ ${fld('Type',`<select name="type">${sel(['visite','coaching','réunion','formation','appel','autre'].map(x=>({v:x,l:x})),r.type)}</select>`)}${fld('Statut',`<select name="statut">${sel(['planifié','réalisé','annulé'].map(x=>({v:x,l:x})),r.statut)}</select>`)}
+ ${fld('Date',inp('date',r.date,'date'))}<div class="f f2" style="gap:8px">${fld('Heure',inp('heure',r.heure,'time'))}${fld('Durée (min)',inp('duree',r.duree,'number','step="15"'))}</div>
+ ${fld('Membre concerné',`<select name="membreId" onchange="const m=S.membres.find(x=>x.id===this.value);if(m){this.form.contact.value=mName(m.id);this.form.tel.value=m.tel||''}">${sel(membreOpts(),r.membreId,'— Aucun / prospect —')}</select>`)}${fld('Contact (nom)',inp('contact',r.contact||''))}
+ ${fld('Téléphone',inp('tel',r.tel||''))}${fld('Rappel / relance',inp('rappel',r.rappel||'','date'))}
+ <div style="grid-column:1/-1">${fld('Notes',`<textarea name="notes">${esc(r.notes||'')}</textarea>`)}</div></form>`,
+ {foot:`${id?`<button class="btn d" onclick="confirmDel('Supprimer ce rendez-vous ?',()=>{S.rdv=S.rdv.filter(x=>x.id!=='${id}');save();render()})">Supprimer</button>`:''}<span style="flex:1"></span><button class="btn" onclick="closeModal()">Annuler</button><button class="btn p" id="mdSave">Enregistrer</button>`,
+ onSave:()=>{const o=getForm('fV');if(!o.titre)return toast('Titre requis',true);const obj={...(r.id?r:{id:uid()}),...o,duree:num(o.duree)||30};if(id)Object.assign(r,obj);else S.rdv.push(obj);log('RDV '+obj.titre+' '+fmtD(obj.date));save();closeModal();toast('Rendez-vous enregistré');render()}})};
+
+/* ===================== ESPACES ===================== */
+App.page_espaces=()=>{const grp=t=>S.espaces.filter(e=>e.type===t);const bloc=(titre,t)=>`<div class="card" style="margin-bottom:16px"><h3>${titre} <span class="sp"></span><span class="mini">${grp(t).filter(e=>e.statut==='occupé').length} / ${grp(t).length} occupé(s)</span></h3><div class="tw"><table><tr><th>Code</th><th>Nom</th><th class="r">Capacité</th><th>Statut</th><th>Occupant</th><th>Formule</th><th>Échéance</th><th class="r">Loyer / mois</th><th></th></tr>
+ ${grp(t).map(e=>{const a=e.abonnementId?byId(S.abonnements,e.abonnementId):null;return`<tr><td><b>${esc(e.code)}</b></td><td>${esc(e.nom)}${e.equip?`<div class="mini">${esc(e.equip)}</div>`:''}</td><td class="r">${e.cap}</td><td>${tag(e.statut)}</td><td>${e.occupantId?`<a onclick="App.membreFiche('${e.occupantId}')" style="cursor:pointer">${esc(mName(e.occupantId))}</a>`:'—'}</td><td>${a?esc(T(a.tarifId)?.label):'—'}</td><td>${a?fmtD(a.fin)+(daysBetween(today(),a.fin)<=7?' <span class="tag t-or">bientôt</span>':''):'—'}</td><td class="r">${a?fmt(a.montant):(e.loyer?fmt(e.loyer):'—')}</td><td class="btns">${e.statut==='occupé'?`<button class="btn s" onclick="App.libererEspace('${e.id}')">Libérer</button>`:t!=='salle'?`<button class="btn s p" onclick="App.assignModal('${e.id}')">Attribuer</button>`:''}<button class="btn s" onclick="App.espaceModal('${e.id}')">Modifier</button></td></tr>`}).join('')}</table></div></div>`;
+ return`<div class="bar"><span class="hint">Un poste ou un bureau est « occupé » quand un abonnement actif lui est rattaché. La salle se gère par réservation.</span><span class="sp"></span><button class="btn p" onclick="App.espaceModal()">+ Ajouter un espace</button></div>${bloc('Postes open space','poste')}${bloc('Bureaux privatifs','bureau')}${bloc('Salles de réunion & formation','salle')}`};
+App.espaceModal=id=>{const e=id?E(id):{type:'poste',cap:1,statut:'libre'};
+ modal(id?`${e.code} · ${e.nom}`:'Nouvel espace',`<form id="fE" class="f f2" onsubmit="return false">${fld('Code',inp('code',e.code||''))}${fld('Nom',inp('nom',e.nom||''))}${fld('Type',`<select name="type">${sel([{v:'poste',l:'Poste open space'},{v:'bureau',l:'Bureau privatif'},{v:'salle',l:'Salle de réunion / formation'}],e.type)}</select>`)}${fld('Capacité (personnes)',inp('cap',e.cap,'number','min="1"'))}
+ ${fld('Statut',`<select name="statut">${sel(['libre','occupé','maintenance'].map(x=>({v:x,l:x})),e.statut)}</select>`)}${fld('Loyer indicatif / mois (DA)',inp('loyer',e.loyer||'','number'))}<div style="grid-column:1/-1">${fld('Équipements',inp('equip',e.equip||''))}</div>
+ ${e.occupantId?`<div class="alert b" style="grid-column:1/-1">Occupé par ${esc(mName(e.occupantId))}. <span class="sp"></span><button class="btn s" onclick="App.libererEspace('${e.id}')">Libérer</button></div>`:id&&e.type!=='salle'?`<div style="grid-column:1/-1"><button class="btn s p" onclick="App.assignModal('${e.id}')">Attribuer à un membre</button></div>`:''}</form>`,
+ {foot:`${id?`<button class="btn d" onclick="confirmDel('Supprimer cet espace ?',()=>{S.espaces=S.espaces.filter(x=>x.id!=='${id}');save();render()})">Supprimer</button>`:''}<span style="flex:1"></span><button class="btn" onclick="closeModal()">Fermer</button><button class="btn p" id="mdSave">Enregistrer</button>`,
+ onSave:()=>{const o=getForm('fE');const obj={...(e.id?e:{id:uid()}),...o,cap:num(o.cap)||1,loyer:num(o.loyer)};if(id)Object.assign(e,obj);else S.espaces.push(obj);save();closeModal();render()}})};
+App.assignModal=(espaceId,membreId)=>{const e=E(espaceId);const tarifs=S.tarifs.filter(t=>t.unite==='mois'&&(e.type==='bureau'?t.cat==='bureau':t.cat==='coworking'));
+ modal(`Attribuer ${e.code} · ${e.nom}`,`<form id="fA" class="f f2" onsubmit="return false">${fld('Membre',`<select name="membreId">${sel(membreOpts(),membreId||'')}</select>`)}${fld('Formule',`<select name="tarifId" onchange="this.form.montant.value=T(this.value).prix">${sel(tarifs.map(t=>({v:t.id,l:`${t.label} — ${fmt0(t.prix)} DA/mois`})),tarifs.find(t=>t.code===(e.type==='bureau'?'BP':'BD'))?.id)}</select>`)}
+ ${fld('Date de début',inp('debut',today(),'date'))}${fld('Durée (mois)',inp('periodes',1,'number','min="1"'))}${fld('Montant mensuel (DA)',inp('montant',tarifs.find(t=>t.code===(e.type==='bureau'?'BP':'BD'))?.prix||'','number'))}${fld('Remise (%)',inp('remise',0,'number'))}
+ <label class="chk" style="grid-column:1/-1"><input type="checkbox" name="facturer" checked> Générer la facture de l'abonnement</label></form>`,
+ {saveLabel:'Attribuer',onSave:()=>{const o=getForm('fA');if(!o.membreId)return toast('Choisissez un membre',true);App.createAbonnement({membreId:o.membreId,tarifId:o.tarifId,espaceId,debut:o.debut,periodes:num(o.periodes)||1,montant:num(o.montant),remise:num(o.remise),facturer:o.facturer});closeModal();render()}})};
+App.createAbonnement=o=>{const fin=addDays(addMonths(o.debut,o.periodes),-1);const a={id:uid(),membreId:o.membreId,tarifId:o.tarifId,espaceId:o.espaceId||'',debut:o.debut,fin,periodes:o.periodes,montant:o.montant,remise:o.remise||0,statut:'actif'};S.abonnements.push(a);
+ if(o.espaceId){const e=E(o.espaceId);e.statut='occupé';e.occupantId=o.membreId;e.abonnementId=a.id}
+ const m=M(o.membreId);if(m&&m.statut==='prospect')m.statut='actif';
+ if(o.facturer){const t=T(o.tarifId);const f=App.makeFacture({membreId:o.membreId,objet:`${t.label} — ${o.periodes} mois (${fmtD(o.debut)} → ${fmtD(fin)})`,lignes:[{desc:`${t.label}${o.espaceId?' ('+E(o.espaceId).code+')':''} — du ${fmtD(o.debut)} au ${fmtD(fin)}`,qte:o.periodes,pu:o.montant,tva:S.settings.tva}],remise:o.remise||0,abonnementId:a.id,echeance:o.debut});f.statut='émise';S.factures.push(f);a.factureId=f.id}
+ log(`Abonnement ${T(o.tarifId)?.label} pour ${mName(o.membreId)}`);save();toast('Abonnement créé'+(o.facturer?' et facture émise':''));return a};
+App.libererEspace=id=>{const e=E(id);confirmDel(`Libérer ${e.code} (${mName(e.occupantId)}) ? L'abonnement rattaché sera marqué résilié.`,()=>{const a=byId(S.abonnements,e.abonnementId);if(a&&App.abStatut(a)==='actif')a.statut='résilié';e.statut='libre';e.occupantId='';e.abonnementId='';log('Espace libéré '+e.code);save();closeModal();render()})};
+/* ===================== MEMBRES ===================== */
+const PIECES=['CNI / Passeport','Registre de commerce','NIF','Statuts de la société','Photo','Justificatif de domicile','Contrat signé','Règlement intérieur signé'];
+App.page_membres=()=>{const q=(App._mq||'').toLowerCase();const st=App._ms||'all';
+ let list=S.membres.filter(m=>(st==='all'||m.statut===st)&&(!q||[m.nom,m.prenom,m.societe,m.tel,m.email,m.nif].join(' ').toLowerCase().includes(q))).sort((a,b)=>mName(a.id).localeCompare(mName(b.id)));
+ return`<div class="bar"><input placeholder="Rechercher nom, société, téléphone…" value="${esc(App._mq||'')}" oninput="App._mq=this.value;render();this.focus();this.setSelectionRange(this.value.length,this.value.length)" style="width:280px"><select onchange="App._ms=this.value;render()">${sel([{v:'all',l:'Tous les statuts'},{v:'actif',l:'Actifs'},{v:'prospect',l:'Prospects'},{v:'suspendu',l:'Suspendus'},{v:'archivé',l:'Archivés'}],st)}</select><span class="sp"></span><button class="btn p" onclick="App.membreModal()">+ Ouvrir un compte</button></div>
+ <div class="card tw">${list.length?`<table><tr><th>Client</th><th>Type</th><th>Contact</th><th>Formule en cours</th><th>Espace</th><th class="r">Solde dû</th><th>Statut</th><th>Depuis</th></tr>${list.map(m=>{const a=S.abonnements.find(x=>x.membreId===m.id&&App.abStatut(x)==='actif');const due=S.factures.filter(f=>f.membreId===m.id&&['émise','partielle'].includes(f.statut)).reduce((s,f)=>s+App.resteOf(f),0);
+ return`<tr class="rowc" onclick="App.membreFiche('${m.id}')"><td><b>${esc(mName(m.id))}</b>${m.societe&&m.nif?`<div class="mini">NIF ${esc(m.nif)}</div>`:''}</td><td>${m.type==='societe'?'Société':'Particulier'}</td><td>${esc(m.tel||'')}<div class="mini">${esc(m.email||'')}</div></td><td>${a?esc(T(a.tarifId)?.label)+`<div class="mini">jusqu'au ${fmtD(a.fin)}</div>`:'—'}</td><td>${a&&a.espaceId?esc(E(a.espaceId)?.code):'—'}</td><td class="r" style="${due>0?'color:var(--rd);font-weight:700':''}">${due>0?fmt(due):'—'}</td><td>${tag(m.statut)}</td><td>${fmtD(m.dateCreation)}</td></tr>`}).join('')}</table>`:'<div class="empty"><b>Aucun client</b>Ouvrez un premier compte pour commencer.</div>'}</div>`};
+App.membreModal=id=>{const m=id?M(id):{type:'particulier',civ:'M.',statut:'actif',dateCreation:today(),pieces:[],source:''};const tarifsAb=S.tarifs.filter(t=>['mois','trimestre','semaine'].includes(t.unite));
+ modal(id?'Modifier la fiche':'Ouverture de compte',`<form id="fM" class="f f2" onsubmit="return false">
+ <div class="fs">Identité</div>${fld('Type de client',`<select name="type" onchange="document.getElementById('socBlk').style.display=this.value==='societe'?'contents':'none'">${sel([{v:'particulier',l:'Particulier / freelance'},{v:'societe',l:'Société / entreprise'}],m.type)}</select>`)}${fld('Statut',`<select name="statut">${sel(['actif','prospect','suspendu','archivé'].map(x=>({v:x,l:x})),m.statut)}</select>`)}
+ <div class="f f3" style="gap:8px;grid-column:1/-1">${fld('Civilité',`<select name="civ">${sel(['M.','Mme','Mlle'].map(x=>({v:x,l:x})),m.civ)}</select>`)}${fld('Prénom',inp('prenom',m.prenom||''))}${fld('Nom',inp('nom',m.nom||''))}</div>
+ <div id="socBlk" style="display:${m.type==='societe'?'contents':'none'}"><div class="fs">Société</div>${fld('Raison sociale',inp('societe',m.societe||''))}${fld('Forme juridique',`<select name="forme">${sel(['SARL','EURL','SPA','SNC','Auto-entrepreneur','Personne physique (RC)','Association','Autre'].map(x=>({v:x,l:x})),m.forme||'SARL')}</select>`)}${fld('N° Registre de commerce',inp('rc',m.rc||''))}${fld('NIF',inp('nif',m.nif||''))}${fld('Article d\'imposition (AI)',inp('ai',m.ai||''))}${fld('NIS',inp('nis',m.nis||''))}${fld('Gérant / représentant',inp('gerant',m.gerant||''))}${fld('Activité',inp('activite',m.activite||''))}</div>
+ <div class="fs">Contact</div>${fld('Téléphone / WhatsApp',inp('tel',m.tel||'','tel'))}${fld('Email',inp('email',m.email||'','email'))}<div style="grid-column:1/-1">${fld('Adresse',inp('adresse',m.adresse||''))}</div>${fld('Source',`<select name="source">${sel(['Visite','Instagram','Facebook','LinkedIn','Google','Bouche à oreille','Site web','Client HDS','Événement','Autre'].map(x=>({v:x,l:x})),m.source,'—')}</select>`)}${fld('Date d\'ouverture',inp('dateCreation',m.dateCreation,'date'))}
+ <div class="fs">Pièces du dossier</div><div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:6px">${PIECES.map(p=>`<label class="chk"><input type="checkbox" name="pieces[]" value="${p}" ${(m.pieces||[]).includes(p)?'checked':''}> ${p}</label>`).join('')}</div>
+ ${id?'':`<div class="fs">Abonnement à l'ouverture (facultatif)</div>${fld('Formule',`<select name="tarifId" onchange="App.mmTarif()">${sel(tarifsAb.map(t=>({v:t.id,l:`${t.label} — ${fmt0(t.prix)} DA / ${t.unite}`})),'','— Pas d\'abonnement pour l\'instant —')}</select>`)}${fld('Espace attribué',`<select name="espaceId" id="mmEsp">${sel([],'','— Aucun —')}</select>`)}${fld('Date de début',inp('debut',today(),'date'))}${fld('Durée (nb de périodes)',inp('periodes',1,'number','min="1"'))}${fld('Montant par période (DA)',inp('montant','','number'))}${fld('Remise (%)',inp('remise',0,'number'))}<label class="chk" style="grid-column:1/-1"><input type="checkbox" name="facturer" checked> Émettre la facture immédiatement</label>`}
+ <div style="grid-column:1/-1">${fld('Notes',`<textarea name="notes">${esc(m.notes||'')}</textarea>`)}</div></form>`,
+ {size:'w',saveLabel:id?'Enregistrer':'Ouvrir le compte',onSave:()=>{const o=getForm('fM');if(!o.nom&&!o.societe)return toast('Nom ou raison sociale requis',true);
+  const obj={...(m.id?m:{id:uid()}),...o};delete obj.facturer;delete obj.tarifId;delete obj.espaceId;delete obj.debut;delete obj.periodes;delete obj.montant;delete obj.remise;
+  if(id)Object.assign(m,obj);else{S.membres.push(obj);log('Compte ouvert : '+mName(obj.id));if(o.tarifId){App.createAbonnement({membreId:obj.id,tarifId:o.tarifId,espaceId:o.espaceId,debut:o.debut,periodes:num(o.periodes)||1,montant:num(o.montant)||T(o.tarifId).prix,remise:num(o.remise),facturer:o.facturer})}}
+  save();closeModal();toast(id?'Fiche mise à jour':'Compte ouvert');App.membreFiche(obj.id);render()}})};
+App.mmTarif=()=>{const f=document.getElementById('fM');const t=T(f.tarifId.value);f.montant.value=t?t.prix:'';const need=t&&(t.code==='BD'||t.code==='BP'||t.cat==='bureau');const libres=S.espaces.filter(e=>e.statut==='libre'&&e.type===(t&&t.cat==='bureau'?'bureau':'poste'));
+ document.getElementById('mmEsp').innerHTML=sel(need?libres.map(e=>({v:e.id,l:e.code+' · '+e.nom})):[],'',need?(libres.length?'— Choisir —':'Aucun espace libre'):'— Aucun (nomade) —')};
+App.membreFiche=(id,tab='infos')=>{const m=M(id);const abos=S.abonnements.filter(a=>a.membreId===id).sort((a,b)=>b.debut.localeCompare(a.debut));const facs=S.factures.filter(f=>f.membreId===id).sort((a,b)=>b.date.localeCompare(a.date));const devs=S.devis.filter(f=>f.membreId===id);const pays=S.paiements.filter(p=>p.membreId===id).sort((a,b)=>b.date.localeCompare(a.date));const res=S.reservations.filter(r=>r.membreId===id).sort((a,b)=>b.date.localeCompare(a.date));
+ const due=facs.filter(f=>['émise','partielle'].includes(f.statut)).reduce((s,f)=>s+App.resteOf(f),0);const totPaid=pays.reduce((s,p)=>s+p.montant,0);
+ const T_={infos:`<div class="grid g2"><div class="card"><h3>Coordonnées</h3><table>${[['Téléphone',m.tel],['Email',m.email],['Adresse',m.adresse],['Type',m.type==='societe'?'Société':'Particulier'],['Source',m.source],['Client depuis',fmtD(m.dateCreation)]].map(x=>`<tr><td class="mini">${x[0]}</td><td><b>${esc(x[1]||'—')}</b></td></tr>`).join('')}</table></div>
+  <div class="card"><h3>${m.type==='societe'?'Informations légales':'Dossier'}</h3><table>${m.type==='societe'?[['Raison sociale',m.societe],['Forme',m.forme],['RC',m.rc],['NIF',m.nif],['AI',m.ai],['NIS',m.nis],['Gérant',m.gerant],['Activité',m.activite]].map(x=>`<tr><td class="mini">${x[0]}</td><td><b>${esc(x[1]||'—')}</b></td></tr>`).join(''):''}<tr><td class="mini">Pièces</td><td>${(m.pieces||[]).length?(m.pieces||[]).map(p=>`<span class="tag t-gr">${esc(p)}</span> `).join(''):'<span class="tag t-or">Dossier incomplet</span>'}</td></tr></table></div></div>${m.notes?`<div class="card" style="margin-top:14px"><h3>Notes</h3><p>${esc(m.notes)}</p></div>`:''}`,
+  abos:`<div class="btns" style="margin-bottom:12px"><button class="btn p" onclick="App.newAboFor('${id}')">+ Nouvel abonnement</button></div><div class="tw">${abos.length?`<table><tr><th>Formule</th><th>Espace</th><th>Début</th><th>Fin</th><th class="r">Montant/pér.</th><th>Statut</th><th></th></tr>${abos.map(a=>`<tr><td>${esc(T(a.tarifId)?.label)}</td><td>${a.espaceId?esc(E(a.espaceId)?.code):'—'}</td><td>${fmtD(a.debut)}</td><td>${fmtD(a.fin)}</td><td class="r">${fmt(a.montant)}</td><td>${tag(App.abStatut(a))}</td><td class="btns">${App.abStatut(a)!=='résilié'?`<button class="btn s" onclick="App.renewAb('${a.id}')">Renouveler</button><button class="btn s" onclick="App.printDoc('contrat','${a.id}')">Contrat</button>`:''}</td></tr>`).join('')}</table>`:'<div class="empty">Aucun abonnement.</div>'}</div>`,
+  fact:`<div class="btns" style="margin-bottom:12px"><button class="btn p" onclick="App.factureModal(null,'${id}')">+ Facture</button><button class="btn" onclick="App.devisModal(null,'${id}')">+ Devis</button></div><div class="tw"><table><tr><th>N°</th><th>Date</th><th>Objet</th><th class="r">Net</th><th class="r">Reste</th><th>Statut</th></tr>${[...devs.map(d=>`<tr class="rowc" onclick="App.devisModal('${d.id}')"><td>${d.numero}</td><td>${fmtD(d.date)}</td><td>${esc(d.objet)}</td><td class="r">${fmt(d.totaux.net)}</td><td class="r">—</td><td>${tag(d.statut)}</td></tr>`),...facs.map(f=>`<tr class="rowc" onclick="App.factureModal('${f.id}')"><td>${f.numero}</td><td>${fmtD(f.date)}</td><td>${esc(f.objet)}</td><td class="r">${fmt(f.totaux.net)}</td><td class="r">${App.resteOf(f)?fmt(App.resteOf(f)):'—'}</td><td>${tag(f.statut)}</td></tr>`)].join('')||'<tr><td colspan="6" class="empty">Aucun document.</td></tr>'}</table></div>`,
+  pay:`<div class="btns" style="margin-bottom:12px"><button class="btn p" onclick="App.payModal(null,'${id}')">+ Encaisser</button></div><div class="tw"><table><tr><th>Reçu</th><th>Date</th><th>Facture</th><th>Mode</th><th>Référence</th><th class="r">Montant</th><th></th></tr>${pays.map(p=>`<tr><td>${p.numero}</td><td>${fmtD(p.date)}</td><td>${byId(S.factures,p.factureId)?.numero||'—'}</td><td>${esc(p.mode)}</td><td>${esc(p.ref)}</td><td class="r">${fmt(p.montant)}</td><td><button class="btn s" onclick="App.printDoc('recu','${p.id}')">Reçu</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Aucun paiement.</td></tr>'}</table></div>`,
+  res:`<div class="tw"><table><tr><th>Date</th><th>Créneau</th><th>Espace</th><th>Objet</th><th class="r">Montant</th><th>Statut</th></tr>${res.map(r=>`<tr class="rowc" onclick="App.resModal('${r.id}')"><td>${fmtD(r.date)}</td><td>${r.debut}–${r.fin}</td><td>${esc(E(r.espaceId)?.nom)}</td><td>${esc(r.objet)}</td><td class="r">${r.montant?fmt(r.montant):'inclus'}</td><td>${tag(r.statut)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">Aucune réservation.</td></tr>'}</table></div>`,
+  docs:`<div class="btns">${[['domiciliation','Attestation de domiciliation'],['contrat','Contrat d\'abonnement'],['presence','Attestation de présence / occupation'],['releve','Relevé de compte client'],['fiche','Fiche client (récapitulatif)']].map(x=>`<button class="btn" onclick="App.printDoc('${x[0]}','${x[0]==='contrat'?(abos[0]?.id||''):id}')">${x[1]}</button>`).join('')}</div><div class="hint" style="margin-top:10px">Les documents s'ouvrent en aperçu, prêts à imprimer ou enregistrer en PDF.</div>`};
+ modal(mName(id),`<div style="display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap">${tag(m.statut)}<span class="mini">${esc(m.tel||'')} · ${esc(m.email||'')}</span><span style="flex:1"></span><span class="mini">Total encaissé <b>${fmt(totPaid)}</b></span>${due>0?`<span class="tag t-rd">Reste dû ${fmt(due)}</span>`:'<span class="tag t-gr">À jour</span>'}<button class="btn s" onclick="App.membreModal('${id}')">Modifier</button></div>
+ <div class="tabs">${[['infos','Informations'],['abos','Abonnements'],['fact','Devis & factures'],['pay','Paiements'],['res','Réservations'],['docs','Documents']].map(t=>`<button class="${tab===t[0]?'on':''}" onclick="App.membreFiche('${id}','${t[0]}')">${t[1]}</button>`).join('')}</div>${T_[tab]}`,{size:'xl',foot:`<button class="btn d" onclick="confirmDel('Archiver ce client ? Il n\\'apparaîtra plus dans les listes actives.',()=>{M('${id}').statut='archivé';save();render()})">Archiver</button><span style="flex:1"></span><button class="btn" onclick="closeModal()">Fermer</button>`})};
+App.newAboFor=membreId=>{const tarifs=S.tarifs.filter(t=>['mois','trimestre','semaine'].includes(t.unite));
+ modal('Nouvel abonnement — '+mName(membreId),`<form id="fA2" class="f f2" onsubmit="return false">${fld('Formule',`<select name="tarifId" onchange="this.form.montant.value=T(this.value).prix;const t=T(this.value);const need=t.code==='BD'||t.cat==='bureau';this.form.espaceId.innerHTML=sel(need?S.espaces.filter(e=>e.statut==='libre'&&e.type===(t.cat==='bureau'?'bureau':'poste')).map(e=>({v:e.id,l:e.code+' · '+e.nom})):[],'',need?'— Choisir —':'— Aucun —')">${sel(tarifs.map(t=>({v:t.id,l:`${t.label} — ${fmt0(t.prix)} DA / ${t.unite}`})),tarifs[0]?.id)}</select>`)}${fld('Espace attribué',`<select name="espaceId">${sel([],'','— Aucun —')}</select>`)}${fld('Début',inp('debut',today(),'date'))}${fld('Nombre de périodes',inp('periodes',1,'number','min="1"'))}${fld('Montant / période (DA)',inp('montant',tarifs[0]?.prix,'number'))}${fld('Remise (%)',inp('remise',0,'number'))}<label class="chk" style="grid-column:1/-1"><input type="checkbox" name="facturer" checked> Émettre la facture</label></form>`,
+ {saveLabel:'Créer',onSave:()=>{const o=getForm('fA2');App.createAbonnement({membreId,tarifId:o.tarifId,espaceId:o.espaceId,debut:o.debut,periodes:num(o.periodes)||1,montant:num(o.montant),remise:num(o.remise),facturer:o.facturer});closeModal();App.membreFiche(membreId,'abos');render()}})};
+
+/* ===================== ABONNEMENTS ===================== */
+App.page_abonnements=()=>{const f=App._abF||'actif';let list=S.abonnements.map(a=>({...a,st:App.abStatut(a)})).filter(a=>f==='all'||(f==='bientot'?(a.st==='actif'&&daysBetween(today(),a.fin)<=7):a.st===f)).sort((a,b)=>a.fin.localeCompare(b.fin));
+ const mrr=S.abonnements.filter(a=>App.abStatut(a)==='actif').reduce((s,a)=>{const t=T(a.tarifId);const per=t?.unite==='trimestre'?3:t?.unite==='semaine'?0.25:1;return s+a.montant*(1-(a.remise||0)/100)/per},0);
+ return`<div class="grid g4" style="margin-bottom:16px"><div class="kpi ok"><div class="l">Revenu mensuel récurrent</div><div class="v">${fmt0(mrr)} DA</div><div class="d">abonnements actifs, HT</div></div><div class="kpi"><div class="l">Actifs</div><div class="v">${S.abonnements.filter(a=>App.abStatut(a)==='actif').length}</div></div><div class="kpi gold"><div class="l">Expirent sous 7 jours</div><div class="v">${S.abonnements.filter(a=>App.abStatut(a)==='actif'&&daysBetween(today(),a.fin)<=7).length}</div></div><div class="kpi warn"><div class="l">Expirés non renouvelés</div><div class="v">${S.abonnements.filter(a=>App.abStatut(a)==='expiré').length}</div></div></div>
+ <div class="bar"><select onchange="App._abF=this.value;render()">${sel([{v:'actif',l:'Actifs'},{v:'bientot',l:'Expirent bientôt'},{v:'expiré',l:'Expirés'},{v:'à venir',l:'À venir'},{v:'résilié',l:'Résiliés'},{v:'all',l:'Tous'}],f)}</select><span class="sp"></span><button class="btn p" onclick="App.abNewPick()">+ Nouvel abonnement</button></div>
+ <div class="card tw">${list.length?`<table><tr><th>Client</th><th>Formule</th><th>Espace</th><th>Début</th><th>Fin</th><th class="r">Jours restants</th><th class="r">Montant</th><th>Facture</th><th>Statut</th><th></th></tr>${list.map(a=>{const fa=byId(S.factures,a.factureId);const dj=daysBetween(today(),a.fin);return`<tr><td><a style="cursor:pointer" onclick="App.membreFiche('${a.membreId}','abos')"><b>${esc(mName(a.membreId))}</b></a></td><td>${esc(T(a.tarifId)?.label)}</td><td>${a.espaceId?esc(E(a.espaceId)?.code):'nomade'}</td><td>${fmtD(a.debut)}</td><td>${fmtD(a.fin)}</td><td class="r" style="${a.st==='actif'&&dj<=7?'color:var(--or);font-weight:700':''}">${a.st==='actif'?dj:'—'}</td><td class="r">${fmt(a.montant*a.periodes*(1-(a.remise||0)/100))}</td><td>${fa?`<a style="cursor:pointer" onclick="App.factureModal('${fa.id}')">${fa.numero}</a> ${tag(fa.statut)}`:'—'}</td><td>${tag(a.st)}</td><td class="btns">${a.st!=='résilié'?`<button class="btn s p" onclick="App.renewAb('${a.id}')">Renouveler</button><button class="btn s" onclick="App.printDoc('contrat','${a.id}')">Contrat</button><button class="btn s d" onclick="App.resilier('${a.id}')">Résilier</button>`:''}</td></tr>`}).join('')}</table>`:'<div class="empty">Aucun abonnement dans cette vue.</div>'}</div>`};
+App.abNewPick=()=>modal('Nouvel abonnement',`<form id="fP" class="f"><div class="fl"><label>Client</label><select name="membreId">${sel(membreOpts(),'')}</select></div></form>`,{saveLabel:'Continuer',onSave:()=>{const id=getForm('fP').membreId;if(!id)return;closeModal();App.newAboFor(id)}});
+App.renewAb=id=>{const a=byId(S.abonnements,id);const t=T(a.tarifId);const start=a.fin<today()?today():addDays(a.fin,1);
+ modal('Renouveler — '+mName(a.membreId),`<form id="fRn" class="f f2" onsubmit="return false">${fld('Formule',`<select name="tarifId" onchange="this.form.montant.value=T(this.value).prix">${sel(S.tarifs.filter(x=>['mois','trimestre','semaine'].includes(x.unite)).map(x=>({v:x.id,l:x.label+' — '+fmt0(x.prix)+' DA'})),a.tarifId)}</select>`)}${fld('Début',inp('debut',start,'date'))}${fld('Nombre de périodes',inp('periodes',a.periodes||1,'number','min="1"'))}${fld('Montant / période',inp('montant',a.montant,'number'))}${fld('Remise (%)',inp('remise',a.remise||0,'number'))}<label class="chk" style="grid-column:1/-1"><input type="checkbox" name="facturer" checked> Émettre la facture</label><div class="hint" style="grid-column:1/-1">L'espace ${a.espaceId?E(a.espaceId)?.code:'(nomade)'} reste attribué au client.</div></form>`,
+ {saveLabel:'Renouveler',onSave:()=>{const o=getForm('fRn');if(App.abStatut(a)==='actif')a.statut='résilié';a.note='Renouvelé';const na=App.createAbonnement({membreId:a.membreId,tarifId:o.tarifId,espaceId:a.espaceId,debut:o.debut,periodes:num(o.periodes)||1,montant:num(o.montant),remise:num(o.remise),facturer:o.facturer});closeModal();render()}})};
+App.resilier=id=>{const a=byId(S.abonnements,id);confirmDel('Résilier cet abonnement et libérer l\'espace ?',()=>{a.statut='résilié';if(a.espaceId){const e=E(a.espaceId);if(e&&e.abonnementId===a.id){e.statut='libre';e.occupantId='';e.abonnementId=''}}log('Résiliation '+mName(a.membreId));save();render()})};
+
+/* ===================== DEVIS & FACTURES (éditeur commun) ===================== */
+const MODES=['Espèces','Virement','Chèque','CIB / Edahabia','BaridiMob','Autre'];
+App.linesEditor=(doc)=>`<table class="lines" id="lines"><tr><th style="width:44%">Désignation</th><th style="width:10%">Qté</th><th style="width:16%">PU HT</th><th style="width:10%">TVA %</th><th class="r" style="width:14%">Total HT</th><th></th></tr>${(doc.lignes.length?doc.lignes:[{desc:'',qte:1,pu:'',tva:S.settings.tva}]).map(App.lineRow).join('')}</table>
+ <div class="btns" style="margin-top:8px"><select id="tarifPick" onchange="App.addLineFromTarif(this.value);this.value=''"><option value="">+ Ajouter depuis la grille tarifaire…</option>${S.tarifs.map(t=>`<option value="${t.id}">${esc(t.label)} — ${fmt0(t.prix)} DA / ${t.unite}</option>`).join('')}</select><button class="btn s" onclick="App.addLine()">+ Ligne libre</button></div>
+ <div class="tot" id="tot"></div>`;
+App.lineRow=l=>`<tr><td><input class="ld" value="${esc(l.desc)}" oninput="App.recalc()"></td><td><input class="lq" type="number" step="0.5" value="${l.qte}" oninput="App.recalc()"></td><td><input class="lp" type="number" step="1" value="${l.pu}" oninput="App.recalc()"></td><td><input class="lt" type="number" value="${l.tva??S.settings.tva}" oninput="App.recalc()"></td><td class="r lh">0</td><td><button class="x" onclick="this.closest('tr').remove();App.recalc()">×</button></td></tr>`;
+App.addLine=(l)=>{document.getElementById('lines').insertAdjacentHTML('beforeend',App.lineRow(l||{desc:'',qte:1,pu:'',tva:S.settings.tva}));App.recalc()};
+App.addLineFromTarif=id=>{const t=T(id);if(!t)return;const puHT=['PH','PJ','IMP'].includes(t.code)?Math.round(t.prix/(1+S.settings.tva/100)*10000)/10000:t.prix;App.addLine({desc:t.label,qte:1,pu:puHT,tva:S.settings.tva})};
+App.readLines=()=>[...document.querySelectorAll('#lines tr')].slice(1).map(tr=>({desc:tr.querySelector('.ld').value,qte:num(tr.querySelector('.lq').value),pu:num(tr.querySelector('.lp').value),tva:num(tr.querySelector('.lt').value)})).filter(l=>l.desc||l.pu);
+App.recalc=()=>{const f=document.getElementById('fD');if(!f)return;const lignes=App.readLines();document.querySelectorAll('#lines tr').forEach((tr,i)=>{if(i===0)return;const q=num(tr.querySelector('.lq').value),p=num(tr.querySelector('.lp').value);tr.querySelector('.lh').textContent=fmt0(q*p)});
+ const t=App.calc({lignes,remise:num(f.remise?.value),modePaiement:f.modePaiement?.value,timbre:f.timbre?f.timbre.checked:true});
+ document.getElementById('tot').innerHTML=`<div><span>Total HT</span><b>${fmt(t.ht)}</b></div>${t.rem?`<div><span>Remise</span><span>− ${fmt(t.rem)}</span></div><div><span>Net HT</span><b>${fmt(t.htn)}</b></div>`:''}<div><span>TVA</span><span>${fmt(t.tva)}</span></div><div><span>Total TTC</span><b>${fmt(t.ttc)}</b></div>${t.timbre?`<div><span>Droit de timbre (${S.settings.timbreTaux} %)</span><span>${fmt(t.timbre)}</span></div>`:''}<div class="b"><span>Net à payer</span><span>${fmt(t.net)}</span></div>`};
+
+/* ---- DEVIS ---- */
+App.page_devis=()=>{const list=S.devis.slice().sort((a,b)=>b.numero.localeCompare(a.numero));const tot=st=>S.devis.filter(d=>d.statut===st).reduce((s,d)=>s+d.totaux.net,0);
+ return`<div class="grid g4" style="margin-bottom:16px"><div class="kpi"><div class="l">En attente</div><div class="v">${fmt0(tot('envoyé'))} DA</div><div class="d">${S.devis.filter(d=>d.statut==='envoyé').length} devis envoyés</div></div><div class="kpi ok"><div class="l">Acceptés</div><div class="v">${fmt0(tot('accepté'))} DA</div></div><div class="kpi warn"><div class="l">Refusés / expirés</div><div class="v">${fmt0(tot('refusé')+tot('expiré'))} DA</div></div><div class="kpi"><div class="l">Taux d'acceptation</div><div class="v">${(()=>{const t=S.devis.filter(d=>['accepté','refusé'].includes(d.statut)).length;return t?Math.round(S.devis.filter(d=>d.statut==='accepté').length/t*100):0})()} %</div></div></div>
+ <div class="bar"><span class="sp"></span><button class="btn p" onclick="App.devisModal()">+ Nouveau devis</button></div>
+ <div class="card tw">${list.length?`<table><tr><th>N°</th><th>Date</th><th>Client</th><th>Objet</th><th>Valide jusqu'au</th><th class="r">Net TTC</th><th>Statut</th><th></th></tr>${list.map(d=>`<tr class="rowc" onclick="App.devisModal('${d.id}')"><td><b>${d.numero}</b></td><td>${fmtD(d.date)}</td><td>${esc(mName(d.membreId)||d.client)}</td><td>${esc(d.objet)}</td><td>${fmtD(d.validite)}${d.validite<today()&&d.statut==='envoyé'?' <span class="tag t-rd">dépassé</span>':''}</td><td class="r">${fmt(d.totaux.net)}</td><td>${tag(d.statut)}</td><td class="btns" onclick="event.stopPropagation()"><button class="btn s" onclick="App.printDoc('devis','${d.id}')">Imprimer</button>${d.statut!=='accepté'?`<button class="btn s p" onclick="App.devisToFacture('${d.id}')">→ Facture</button>`:d.factureId?`<span class="tag t-gy">Facturé</span>`:''}</td></tr>`).join('')}</table>`:'<div class="empty"><b>Aucun devis</b>Créez votre premier devis.</div>'}</div>`};
+App.devisModal=(id,membreId)=>{const d=id?byId(S.devis,id):{membreId:membreId||'',date:today(),validite:addDays(today(),15),lignes:[],remise:0,statut:'brouillon',objet:''};
+ modal(id?`Devis ${d.numero}`:'Nouveau devis',`<form id="fD" class="f f2" onsubmit="return false">${fld('Client',`<select name="membreId">${sel(membreOpts(),d.membreId,'— Client externe —')}</select>`)}${fld('Client externe (si non inscrit)',inp('client',d.client||''))}${fld('Date',inp('date',d.date,'date'))}${fld('Valide jusqu\'au',inp('validite',d.validite,'date'))}<div style="grid-column:1/-1">${fld('Objet',inp('objet',d.objet||'','text','placeholder="Ex. Bureau privatif + domiciliation"'))}</div>
+ <div style="grid-column:1/-1">${App.linesEditor(d)}</div>${fld('Remise globale (%)',inp('remise',d.remise||0,'number','oninput="App.recalc()"'))}${fld('Statut',`<select name="statut">${sel(['brouillon','envoyé','accepté','refusé','expiré'].map(x=>({v:x,l:x})),d.statut)}</select>`)}<div style="grid-column:1/-1">${fld('Conditions / notes',`<textarea name="notes">${esc(d.notes||'')}</textarea>`)}</div></form>`,
+ {size:'w',foot:`${id?`<button class="btn d" onclick="confirmDel('Supprimer ce devis ?',()=>{S.devis=S.devis.filter(x=>x.id!=='${id}');save();render()})">Supprimer</button><button class="btn" onclick="App.printDoc('devis','${id}')">Imprimer</button><button class="btn" onclick="App.devisToFacture('${id}')">Convertir en facture</button>`:''}<span style="flex:1"></span><button class="btn" onclick="closeModal()">Annuler</button><button class="btn p" id="mdSave">Enregistrer</button>`,
+ onSave:()=>{const o=getForm('fD');const lignes=App.readLines();if(!lignes.length)return toast('Ajoutez au moins une ligne',true);if(!o.membreId&&!o.client)return toast('Indiquez un client',true);
+  const obj={...(d.id?d:{id:uid(),numero:App.nextNum('Dev')}),...o,lignes,remise:num(o.remise)};obj.totaux=App.calc(obj);if(id)Object.assign(d,obj);else S.devis.push(obj);log('Devis '+obj.numero);save();closeModal();toast('Devis enregistré');render()}});
+ App.recalc()};
+App.devisToFacture=id=>{const d=byId(S.devis,id);const f=App.makeFacture({membreId:d.membreId,client:d.client,objet:d.objet,lignes:JSON.parse(JSON.stringify(d.lignes)),remise:d.remise,devisId:d.id,notes:d.notes});f.statut='émise';S.factures.push(f);d.statut='accepté';d.factureId=f.id;log(`Devis ${d.numero} converti en facture ${f.numero}`);save();closeModal();toast('Facture '+f.numero+' créée');App.factureModal(f.id);render()};
+
+/* ---- FACTURES ---- */
+App.page_factures=()=>{const st=App._fF||'all';const q=(App._fq||'').toLowerCase();let list=S.factures.filter(f=>(st==='all'||(st==='ouvertes'?['émise','partielle'].includes(f.statut):f.statut===st))&&(!q||(f.numero+' '+mName(f.membreId)+' '+f.client+' '+f.objet).toLowerCase().includes(q))).sort((a,b)=>b.numero.localeCompare(a.numero));
+ const mk=nowMonth();const caM=S.factures.filter(f=>monthKey(f.date)===mk&&f.statut!=='annulée'&&f.statut!=='brouillon').reduce((s,f)=>s+f.totaux.htn,0);const tvaM=S.factures.filter(f=>monthKey(f.date)===mk&&f.statut!=='annulée'&&f.statut!=='brouillon').reduce((s,f)=>s+f.totaux.tva,0);
+ return`<div class="grid g4" style="margin-bottom:16px"><div class="kpi"><div class="l">Facturé ce mois (HT)</div><div class="v">${fmt0(caM)} DA</div><div class="d">TVA collectée ${fmt0(tvaM)} DA</div></div><div class="kpi warn"><div class="l">Reste à encaisser</div><div class="v">${fmt0(S.factures.filter(f=>['émise','partielle'].includes(f.statut)).reduce((s,f)=>s+App.resteOf(f),0))} DA</div></div><div class="kpi warn"><div class="l">En retard</div><div class="v">${S.factures.filter(f=>['émise','partielle'].includes(f.statut)&&f.echeance<today()).length}</div><div class="d">factures échues</div></div><div class="kpi ok"><div class="l">Payées ce mois</div><div class="v">${S.factures.filter(f=>f.statut==='payée'&&monthKey(f.date)===mk).length}</div></div></div>
+ <div class="bar"><input placeholder="N°, client, objet…" value="${esc(App._fq||'')}" oninput="App._fq=this.value;render();this.focus();this.setSelectionRange(this.value.length,this.value.length)" style="width:240px"><select onchange="App._fF=this.value;render()">${sel([{v:'all',l:'Toutes'},{v:'ouvertes',l:'À encaisser'},{v:'payée',l:'Payées'},{v:'brouillon',l:'Brouillons'},{v:'annulée',l:'Annulées'}],st)}</select><span class="sp"></span><button class="btn p" onclick="App.factureModal()">+ Nouvelle facture</button></div>
+ <div class="card tw">${list.length?`<table><tr><th>N°</th><th>Date</th><th>Échéance</th><th>Client</th><th>Objet</th><th class="r">Net à payer</th><th class="r">Payé</th><th class="r">Reste</th><th>Statut</th><th></th></tr>${list.map(f=>{const p=App.paidOf(f.id),r=App.resteOf(f);return`<tr class="rowc" onclick="App.factureModal('${f.id}')"><td><b>${f.numero}</b></td><td>${fmtD(f.date)}</td><td>${fmtD(f.echeance)}${r>0&&f.echeance<today()&&f.statut!=='brouillon'?' <span class="tag t-rd">retard</span>':''}</td><td>${esc(mName(f.membreId)||f.client)}</td><td>${esc(f.objet)}</td><td class="r">${fmt(f.totaux.net)}</td><td class="r">${p?fmt(p):'—'}</td><td class="r" style="${r>0&&f.statut!=='brouillon'?'color:var(--rd);font-weight:700':''}">${r&&f.statut!=='annulée'?fmt(r):'—'}</td><td>${tag(f.statut)}</td><td class="btns" onclick="event.stopPropagation()"><button class="btn s" onclick="App.printDoc('facture','${f.id}')">Imprimer</button>${r>0&&['émise','partielle'].includes(f.statut)?`<button class="btn s ok" onclick="App.payModal('${f.id}')">Encaisser</button>`:''}</td></tr>`}).join('')}</table>`:'<div class="empty"><b>Aucune facture</b>dans cette vue.</div>'}</div>`};
+App.factureModal=(id,membreId)=>{const f=id?byId(S.factures,id):{membreId:membreId||'',date:today(),echeance:addDays(today(),15),lignes:[],remise:0,statut:'brouillon',modePaiement:'Espèces',objet:''};const paid=id?App.paidOf(f.id):0;const locked=id&&paid>0;
+ modal(id?`Facture ${f.numero}`:'Nouvelle facture',`${locked?`<div class="alert b">Des paiements sont enregistrés (${fmt(paid)}) : les lignes ne sont plus modifiables. Reste dû : <b>${fmt(App.resteOf(f))}</b></div>`:''}<form id="fD" class="f f2" onsubmit="return false"><fieldset style="display:contents" ${locked?'disabled':''}>${fld('Client',`<select name="membreId">${sel(membreOpts(),f.membreId,'— Client de passage —')}</select>`)}${fld('Client de passage (nom)',inp('client',f.client||''))}${fld('Date',inp('date',f.date,'date'))}${fld('Échéance',inp('echeance',f.echeance,'date'))}<div style="grid-column:1/-1">${fld('Objet',inp('objet',f.objet||''))}</div>
+ <div style="grid-column:1/-1">${App.linesEditor(f)}</div>${fld('Remise globale (%)',inp('remise',f.remise||0,'number','oninput="App.recalc()"'))}${fld('Mode de paiement prévu',`<select name="modePaiement" onchange="App.recalc()">${sel(MODES.map(x=>({v:x,l:x})),f.modePaiement)}</select>`)}<label class="chk"><input type="checkbox" name="timbre" ${f.timbre===false?'':'checked'} onchange="App.recalc()"> Appliquer le droit de timbre (paiement en espèces)</label></fieldset>
+ ${fld('Statut',`<select name="statut">${sel(['brouillon','émise','partielle','payée','annulée'].map(x=>({v:x,l:x})),f.statut)}</select>`)}<div style="grid-column:1/-1">${fld('Mentions / notes',`<textarea name="notes">${esc(f.notes||'')}</textarea>`)}</div></form>`,
+ {size:'w',foot:`${id?`${f.statut==='brouillon'?`<button class="btn d" onclick="confirmDel('Supprimer ce brouillon ?',()=>{S.factures=S.factures.filter(x=>x.id!=='${id}');save();render()})">Supprimer</button>`:''}<button class="btn" onclick="App.printDoc('facture','${id}')">Imprimer</button>${App.resteOf(f)>0&&f.statut!=='annulée'?`<button class="btn ok" onclick="App.payModal('${id}')">Encaisser</button>`:''}`:''}<span style="flex:1"></span><button class="btn" onclick="closeModal()">Annuler</button><button class="btn p" id="mdSave">${id?'Enregistrer':'Émettre la facture'}</button>`,
+ onSave:()=>{const o=getForm('fD');if(!locked){const lignes=App.readLines();if(!lignes.length)return toast('Ajoutez au moins une ligne',true);if(!o.membreId&&!o.client)return toast('Indiquez un client',true);Object.assign(f,o,{lignes,remise:num(o.remise),timbre:o.timbre});}else{f.statut=o.statut;f.notes=o.notes}
+  f.totaux=App.calc(f);if(!id){f.id=uid();f.numero=App.nextNum('Fac');if(f.statut==='brouillon')f.statut='émise';S.factures.push(f)}App.refreshStatut(f);log('Facture '+f.numero+' '+f.statut);save();closeModal();toast('Facture '+f.numero+' enregistrée');render()}});
+ App.recalc()};
+
+/* ===================== PAIEMENTS ===================== */
+App.page_paiements=()=>{const d=today();const day=S.paiements.filter(p=>p.date===d);const byMode={};day.forEach(p=>byMode[p.mode]=(byMode[p.mode]||0)+p.montant);const mk=nowMonth();
+ const list=S.paiements.slice().sort((a,b)=>(b.date+b.numero).localeCompare(a.date+a.numero)).slice(0,200);
+ return`<div class="grid g4" style="margin-bottom:16px"><div class="kpi ok"><div class="l">Caisse du jour</div><div class="v">${fmt0(day.reduce((s,p)=>s+p.montant,0))} DA</div><div class="d">${Object.entries(byMode).map(x=>`${x[0]} ${fmt0(x[1])}`).join(' · ')||'aucun encaissement'}</div></div><div class="kpi"><div class="l">Encaissé ce mois</div><div class="v">${fmt0(S.paiements.filter(p=>monthKey(p.date)===mk).reduce((s,p)=>s+p.montant,0))} DA</div></div><div class="kpi"><div class="l">Espèces ce mois</div><div class="v">${fmt0(S.paiements.filter(p=>monthKey(p.date)===mk&&p.mode==='Espèces').reduce((s,p)=>s+p.montant,0))} DA</div></div><div class="kpi"><div class="l">Passages aujourd'hui</div><div class="v">${S.checkins.filter(c=>c.date===d).length}</div><div class="d">pass heure / journée</div></div></div>
+ <div class="bar"><span class="sp"></span><button class="btn g" onclick="App.quickSale()">Encaisser un pass</button><button class="btn p" onclick="App.payModal()">+ Encaisser une facture</button></div>
+ <div class="grid" style="grid-template-columns:2fr 1fr"><div class="card tw"><h3>Journal des encaissements</h3>${list.length?`<table><tr><th>Reçu</th><th>Date</th><th>Client</th><th>Facture</th><th>Mode</th><th>Réf.</th><th class="r">Montant</th><th></th></tr>${list.map(p=>`<tr><td>${p.numero}</td><td>${fmtD(p.date)}</td><td>${esc(mName(p.membreId)||p.client)}</td><td>${byId(S.factures,p.factureId)?.numero||'—'}</td><td>${esc(p.mode)}</td><td>${esc(p.ref)}</td><td class="r"><b>${fmt(p.montant)}</b></td><td class="btns"><button class="btn s" onclick="App.printDoc('recu','${p.id}')">Reçu</button><button class="btn s d" onclick="App.delPay('${p.id}')">×</button></td></tr>`).join('')}</table>`:'<div class="empty">Aucun encaissement.</div>'}</div>
+ <div class="card"><h3>Registre des passages du jour</h3>${S.checkins.filter(c=>c.date===d).length?`<table><tr><th>Heure</th><th>Nom</th><th>Formule</th></tr>${S.checkins.filter(c=>c.date===d).map(c=>`<tr><td>${c.heure}</td><td>${esc(c.nom||'—')}</td><td>${esc(c.type)}${c.qte>1?' ×'+c.qte:''}</td></tr>`).join('')}</table>`:'<div class="empty">Aucun passage enregistré.</div>'}<div class="hint" style="margin-top:8px">Alimenté automatiquement par la caisse rapide.</div></div></div>`};
+App.facOpts=m=>S.factures.filter(x=>(m?x.membreId===m:true)&&['émise','partielle'].includes(x.statut)&&App.resteOf(x)>0).map(x=>({v:x.id,l:`${x.numero} — ${mName(x.membreId)||x.client} — reste ${fmt(App.resteOf(x))}`}));
+App.payModal=(factureId,membreId)=>{const f=factureId?byId(S.factures,factureId):null;const mid=f?f.membreId:membreId||'';
+ 
+ modal('Encaisser un paiement',`<form id="fPay" class="f f2" onsubmit="return false">${fld('Client',`<select name="membreId" onchange="this.form.factureId.innerHTML=sel(App.facOpts(this.value),'','— Sans facture (acompte / avance) —')">${sel(membreOpts(),mid,'— Tous —')}</select>`)}${fld('Facture',`<select name="factureId" onchange="const x=S.factures.find(y=>y.id===this.value);if(x)this.form.montant.value=App.resteOf(x)">${sel(App.facOpts(mid),factureId||'','— Sans facture (acompte / avance) —')}</select>`)}
+ ${fld('Montant (DA)',inp('montant',f?App.resteOf(f):'','number','step="1"'))}${fld('Mode',`<select name="mode">${sel(MODES.map(x=>({v:x,l:x})),f?f.modePaiement:'Espèces')}</select>`)}${fld('Date',inp('date',today(),'date'))}${fld('Référence (n° chèque, virement…)',inp('ref',''))}<div style="grid-column:1/-1">${fld('Note',inp('note',''))}</div></form>`,
+ {saveLabel:'Encaisser & imprimer le reçu',onSave:()=>{const o=getForm('fPay');const m=num(o.montant);if(m<=0)return toast('Montant invalide',true);const fx=byId(S.factures,o.factureId);if(fx&&m>App.resteOf(fx)+0.01)return toast('Le montant dépasse le reste dû ('+fmt(App.resteOf(fx))+')',true);
+  const p=App.addPaiement({factureId:o.factureId,membreId:o.membreId||fx?.membreId,client:fx?.client||'',montant:m,mode:o.mode,ref:o.ref,date:o.date,note:o.note});log(`Encaissement ${fmt(m)} ${o.mode} ${fx?fx.numero:''}`);save();closeModal();toast('Paiement enregistré');render();App.printDoc('recu',p.id)}})};
+App.delPay=id=>confirmDel('Supprimer cet encaissement ? Le reste dû de la facture sera recalculé.',()=>{const p=byId(S.paiements,id);S.paiements=S.paiements.filter(x=>x.id!==id);const f=byId(S.factures,p.factureId);if(f)App.refreshStatut(f);save();render()});
+/* ===================== DOCUMENTS ===================== */
+App.docHead=(titre,numero,dateStr)=>{const s=S.settings;return`<div class="hd"><div class="co">${s.logo?`<img src="${s.logo}" alt="logo"><br>`:''}<b>${esc(s.nom)}</b>${esc(s.raison)}<br>${esc(s.adresse)}<br>Tél. ${esc(s.tel)} — ${esc(s.email)}<br>RC ${esc(s.rc)} — NIF ${esc(s.nif)}${s.ai?' — AI '+esc(s.ai):''}${s.nis?' — NIS '+esc(s.nis):''}</div><div class="ttl"><h1>${titre}</h1><div>${numero?'N° <b>'+esc(numero)+'</b><br>':''}${dateStr||''}</div></div></div>`};
+App.docFoot=()=>{const s=S.settings;return`<div class="ft">${esc(s.raison)} — ${esc(s.adresse)} — RC ${esc(s.rc)} — NIF ${esc(s.nif)}${s.ai?' — AI '+esc(s.ai):''}${s.nis?' — NIS '+esc(s.nis):''}${s.rib?'<br>RIB : '+esc(s.rib)+(s.banque?' ('+esc(s.banque)+')':''):''}<br>${esc(s.site)} — ${esc(s.horaires)}</div>`};
+App.clientBox=(membreId,client)=>{const m=M(membreId);if(!m)return`<div class="box"><b>Client</b><br>${esc(client||'Client de passage')}</div>`;
+ return`<div class="box"><b>Client</b><br><b>${esc(mName(m.id))}</b>${m.type==='societe'&&m.nom?'<br>Représentée par '+esc(m.civ+' '+m.prenom+' '+m.nom):''}<br>${esc(m.adresse||'')}<br>${m.tel?'Tél. '+esc(m.tel):''} ${m.email?'— '+esc(m.email):''}${m.rc?'<br>RC '+esc(m.rc):''}${m.nif?' — NIF '+esc(m.nif):''}${m.ai?' — AI '+esc(m.ai):''}${m.nis?' — NIS '+esc(m.nis):''}</div>`};
+App.docTable=doc=>{const t=doc.totaux;return`<table><tr><th>Désignation</th><th class="r">Qté</th><th class="r">PU HT</th><th class="r">TVA</th><th class="r">Total HT</th></tr>${doc.lignes.map(l=>`<tr><td>${esc(l.desc)}</td><td class="r">${l.qte}</td><td class="r">${fmt(l.pu)}</td><td class="r">${l.tva} %</td><td class="r">${fmt(l.qte*l.pu)}</td></tr>`).join('')}</table>
+ <div class="tots"><div><span>Total HT</span><span>${fmt(t.ht)}</span></div>${t.rem?`<div><span>Remise ${doc.remise} %</span><span>− ${fmt(t.rem)}</span></div><div><span>Net HT</span><span>${fmt(t.htn)}</span></div>`:''}<div><span>TVA</span><span>${fmt(t.tva)}</span></div><div><span>Total TTC</span><span>${fmt(t.ttc)}</span></div>${t.timbre?`<div><span>Droit de timbre</span><span>${fmt(t.timbre)}</span></div>`:''}<div class="b"><span>Net à payer</span><span>${fmt(t.net)}</span></div></div>
+ <p style="clear:both;margin-top:16px"><i>Arrêté${doc.numero?.startsWith(S.settings.pDev)?' le présent devis':'e la présente facture'} à la somme de : <b>${enLettres(t.net)}</b>.</i></p>`};
+
+App.buildDoc=(type,id)=>{const s=S.settings;let body='',titre='';
+ if(type==='facture'||type==='devis'){const d=type==='facture'?byId(S.factures,id):byId(S.devis,id);const isF=type==='facture';titre=isF?'Facture':'Devis';const paid=isF?App.paidOf(d.id):0;
+  body=App.docHead(titre.toUpperCase(),d.numero,`Date : ${fmtD(d.date)}<br>${isF?'Échéance : '+fmtD(d.echeance):'Valable jusqu\'au : '+fmtD(d.validite)}`)+`<div style="display:flex;gap:14px"><div style="flex:1">${App.clientBox(d.membreId,d.client)}</div><div style="flex:1"><div class="box"><b>Objet</b><br>${esc(d.objet||'—')}${isF?'<br><b>Mode de paiement</b> : '+esc(d.modePaiement):''}${d.devisId?'<br>Réf. devis '+esc(byId(S.devis,d.devisId)?.numero||''):''}</div></div></div>`+App.docTable(d)
+  +(isF&&paid?`<div class="box" style="margin-top:8px"><b>Règlements reçus</b> : ${fmt(paid)} — <b>Reste à payer : ${fmt(App.resteOf(d))}</b></div>`:'')+(d.notes?`<p><b>Notes :</b> ${esc(d.notes)}</p>`:'')+`<p style="font-size:11px;color:#555">${esc(s.condPaiement)}${isF?' Facture établie en application de la loi n° 04-02 relative aux pratiques commerciales et du décret exécutif n° 05-468.':' Ce devis n\'engage pas le client tant qu\'il n\'est pas accepté et signé. Merci de nous le retourner avec la mention « Bon pour accord ».'}</p><div class="sig"><div>Le client<span></span></div><div>${esc(s.nom)}<span></span></div></div>`}
+ else if(type==='recu'){const p=byId(S.paiements,id);const f=byId(S.factures,p.factureId);titre='Reçu';const who=mName(p.membreId)||p.client||'Client de passage';
+  body=App.docHead('REÇU DE PAIEMENT',p.numero,'Date : '+fmtD(p.date))+`<div class="box"><b>Reçu de</b> : ${esc(who)}<br><b>La somme de</b> : <b>${fmt(p.montant)}</b> (${enLettres(p.montant)})<br><b>Mode de paiement</b> : ${esc(p.mode)}${p.ref?' — Réf. '+esc(p.ref):''}<br><b>Objet</b> : ${f?'Règlement '+(App.resteOf(f)>0?'partiel':'total')+' de la facture '+f.numero+' — '+esc(f.objet):'Acompte / avance'}${f?'<br><b>Reste dû sur cette facture</b> : '+fmt(App.resteOf(f)):''}${p.note?'<br>'+esc(p.note):''}</div><div class="sig"><div>Le client<span></span></div><div>Cachet et signature ${esc(s.nom)}<span></span></div></div>`}
+ else if(type==='domiciliation'){const m=M(id);titre='Attestation de domiciliation';const a=S.abonnements.find(x=>x.membreId===id&&App.abStatut(x)==='actif');const n=App.nextNum('Ctr');
+  body=App.docHead('ATTESTATION DE DOMICILIATION',n,'Alger, le '+fmtD(today()))+`<p>Nous soussignés, <b>${esc(s.raison)}</b>, immatriculée au registre de commerce sous le n° ${esc(s.rc)}, NIF ${esc(s.nif)}, dont le siège social est sis ${esc(s.adresse)}, représentée par son gérant ${esc(s.gerant)},</p><p>attestons par la présente que :</p><div class="box"><b>${esc(mName(m.id))}</b>${m.type==='societe'?`<br>${esc(m.forme||'')} — représentée par ${esc(m.civ+' '+m.prenom+' '+m.nom)}${m.rc?'<br>RC '+esc(m.rc):''}${m.nif?' — NIF '+esc(m.nif):''}`:`<br>${esc(m.civ+' '+m.prenom+' '+m.nom)}`}${m.activite?'<br>Activité : '+esc(m.activite):''}</div><p>est domicilié(e) à l'adresse de notre espace <b>${esc(s.nom)}</b>, <b>${esc(s.adresse)}</b>, dans le cadre d'un contrat de domiciliation commerciale${a?` conclu pour la période du ${fmtD(a.debut)} au ${fmtD(a.fin)} (formule « ${esc(T(a.tarifId)?.label)} »)`:''}.</p><p>Cette domiciliation comprend la mise à disposition de l'adresse comme siège social à des fins d'immatriculation au registre de commerce et de correspondance administrative, la réception et la notification du courrier, ainsi que l'accès aux espaces communs selon la formule souscrite.</p><p>La présente attestation est délivrée à l'intéressé(e) pour servir et valoir ce que de droit, notamment auprès du Centre National du Registre de Commerce (CNRC), des services fiscaux et de tout organisme concerné.</p><div class="sig"><div></div><div>Pour ${esc(s.raison)}<br>Le gérant, ${esc(s.gerant)}<span></span></div></div>`;S.docs.push({id:uid(),type,membreId:id,numero:n,date:today()});save()}
+ else if(type==='contrat'){const a=byId(S.abonnements,id);if(!a)return null;const m=M(a.membreId);const t=T(a.tarifId);const e=a.espaceId?E(a.espaceId):null;titre='Contrat d\'abonnement';const n=a.contratNum||App.nextNum('Ctr');a.contratNum=n;save();const tot=a.montant*a.periodes*(1-(a.remise||0)/100);
+  body=App.docHead('CONTRAT D\'ABONNEMENT COWORKING',n,'Alger, le '+fmtD(today()))+`<h2>Entre les soussignés</h2><div class="box"><b>Le prestataire</b> : ${esc(s.raison)} — ${esc(s.nom)}, ${esc(s.adresse)}, RC ${esc(s.rc)}, NIF ${esc(s.nif)}, représentée par ${esc(s.gerant)}, gérant.</div>${App.clientBox(m.id).replace('<b>Client</b>','<b>Le membre</b>')}
+  <h2>Article 1 — Objet</h2><p>Le prestataire met à disposition du membre, au sein de l'espace ${esc(s.nom)}, les prestations de la formule <b>« ${esc(t?.label)} »</b>${e?` avec attribution de l'espace <b>${esc(e.code)} — ${esc(e.nom)}</b>`:' en accès nomade (poste non attribué)'}, comprenant l'accès à l'open space, la connexion internet fibre, le café/thé, et les services associés à la formule (casier, quota d'impression, heures de salle de réunion, domiciliation le cas échéant).</p>
+  <h2>Article 2 — Durée</h2><p>Le présent contrat est conclu du <b>${fmtD(a.debut)}</b> au <b>${fmtD(a.fin)}</b> (${a.periodes} ${t?.unite}${a.periodes>1?'s':''}). Il est renouvelable par accord exprès des parties. Toute période entamée est due.</p>
+  <h2>Article 3 — Prix et paiement</h2><p>Le prix est fixé à <b>${fmt(a.montant)} HT par ${t?.unite}</b>${a.remise?`, remise de ${a.remise} % incluse`:''}, soit un total de <b>${fmt(tot)} HT</b> pour la durée du contrat, majoré de la TVA au taux en vigueur (${s.tva} %). Les abonnements sont payables d'avance, du 1er au 5 de chaque mois, en espèces, par virement, chèque ou carte. Tout retard de paiement supérieur à 10 jours entraîne la suspension de l'accès jusqu'à régularisation.</p>
+  <h2>Article 4 — Horaires et accès</h2><p>L'espace est accessible ${esc(s.horaires)}. Le membre s'engage à respecter le règlement intérieur, le calme des lieux, le matériel mis à disposition et les autres membres. Les visiteurs sont accueillis dans les espaces communs uniquement.</p>
+  <h2>Article 5 — Responsabilité</h2><p>Le membre est responsable de ses effets personnels et du matériel qu'il apporte. Le prestataire décline toute responsabilité en cas de vol ou de dégradation, sauf faute prouvée. Le membre est responsable des dommages qu'il cause aux locaux et équipements.</p>
+  <h2>Article 6 — Résiliation</h2><p>Chaque partie peut résilier le contrat à l'échéance moyennant un préavis de 15 jours. Le prestataire peut résilier de plein droit en cas de manquement grave (impayé, comportement, usage illicite), après mise en demeure restée sans effet sous 7 jours.</p>
+  <h2>Article 7 — Données et confidentialité</h2><p>Les informations du membre sont utilisées uniquement pour la gestion de l'abonnement, la facturation et la communication interne. Les parties s'engagent à la confidentialité réciproque des informations échangées.</p>
+  <h2>Article 8 — Litiges</h2><p>Tout litige relatif au présent contrat sera réglé à l'amiable ; à défaut, il relève de la compétence des tribunaux d'Alger.</p><p>Fait à Alger en deux exemplaires originaux, le ${fmtD(today())}.</p><div class="sig"><div>Le membre<br><i>« Lu et approuvé »</i><span></span></div><div>Pour ${esc(s.raison)}<br>${esc(s.gerant)}, gérant<span></span></div></div>`}
+ else if(type==='convention'){const r=byId(S.reservations,id);const e=E(r.espaceId);titre='Convention de mise à disposition';const h=(tmin(r.fin)-tmin(r.debut))/60;const n=r.convNum||App.nextNum('Ctr');r.convNum=n;save();
+  body=App.docHead('CONVENTION DE MISE À DISPOSITION DE SALLE',n,'Alger, le '+fmtD(today()))+`<div class="box"><b>Le prestataire</b> : ${esc(s.raison)} — ${esc(s.nom)}, ${esc(s.adresse)}, RC ${esc(s.rc)}, NIF ${esc(s.nif)}.</div>${App.clientBox(r.membreId,(r.client||'')+(r.tel?' — Tél. '+r.tel:'')).replace('<b>Client</b>','<b>Le bénéficiaire</b>')}
+  <h2>Article 1 — Objet</h2><p>Mise à disposition de la <b>${esc(e.nom)}</b> (capacité ${e.cap} personnes${e.equip?', équipée : '+esc(e.equip):''}) pour : <b>${esc(r.objet||'réunion')}</b>, ${r.participants?r.participants+' participants':''}.</p><h2>Article 2 — Date et horaires</h2><p>Le <b>${fmtDL(r.date)}</b> de <b>${r.debut}</b> à <b>${r.fin}</b>, soit ${h} heure${h>1?'s':''}. Tout dépassement est facturé par heure entamée au tarif en vigueur.</p><h2>Article 3 — Prix</h2><p>Montant de la prestation : <b>${fmt(r.montant)} TTC</b>${r.acompte?`, dont un acompte de <b>${fmt(r.acompte)}</b> (${s.acompteSalle} %) exigible à la réservation, le solde étant réglé au plus tard le jour de la prestation`:''}. En cas d'annulation moins de 48 heures avant, l'acompte reste acquis au prestataire.</p><h2>Article 4 — Obligations</h2><p>Le bénéficiaire s'engage à utiliser la salle conformément à sa destination, à respecter les autres occupants de l'espace, à restituer les lieux et le matériel en l'état, et répond de toute dégradation. Le prestataire assure la disponibilité de la salle, de la connexion internet, du matériel de projection et du café/thé.</p><div class="sig"><div>Le bénéficiaire<br><i>« Lu et approuvé »</i><span></span></div><div>Pour ${esc(s.raison)}<span></span></div></div>`}
+ else if(type==='presence'){const m=M(id);titre='Attestation';const a=S.abonnements.filter(x=>x.membreId===id).sort((x,y)=>y.debut.localeCompare(x.debut))[0];
+  body=App.docHead('ATTESTATION D\'OCCUPATION',App.nextNum('Ctr'),'Alger, le '+fmtD(today()))+`<p>Nous soussignés, <b>${esc(s.raison)}</b> (RC ${esc(s.rc)}, NIF ${esc(s.nif)}), exploitant l'espace de coworking <b>${esc(s.nom)}</b> sis ${esc(s.adresse)}, attestons que :</p><div class="box"><b>${esc(mName(m.id))}</b>${m.adresse?'<br>'+esc(m.adresse):''}${m.nif?'<br>NIF '+esc(m.nif):''}</div><p>occupe régulièrement nos locaux en qualité de membre${a?` dans le cadre de la formule « ${esc(T(a.tarifId)?.label)} »${a.espaceId?' (espace '+esc(E(a.espaceId)?.code)+')':''}, du ${fmtD(a.debut)} au ${fmtD(a.fin)}`:''}, et y exerce son activité professionnelle.</p><p>La présente attestation est délivrée pour servir et valoir ce que de droit.</p><div class="sig"><div></div><div>Pour ${esc(s.raison)}<br>${esc(s.gerant)}, gérant<span></span></div></div>`;save()}
+ else if(type==='releve'){const m=M(id);titre='Relevé de compte';const facs=S.factures.filter(f=>f.membreId===id&&!['brouillon','annulée'].includes(f.statut)).sort((a,b)=>a.date.localeCompare(b.date));const pays=S.paiements.filter(p=>p.membreId===id);const lines=[...facs.map(f=>({d:f.date,l:'Facture '+f.numero+' — '+f.objet,deb:f.totaux.net,cre:0})),...pays.map(p=>({d:p.date,l:'Règlement '+p.numero+' ('+p.mode+')',deb:0,cre:p.montant}))].sort((a,b)=>a.d.localeCompare(b.d));let solde=0;
+  body=App.docHead('RELEVÉ DE COMPTE CLIENT','','Arrêté au '+fmtD(today()))+App.clientBox(id)+`<table><tr><th>Date</th><th>Libellé</th><th class="r">Débit</th><th class="r">Crédit</th><th class="r">Solde</th></tr>${lines.map(x=>{solde+=x.deb-x.cre;return`<tr><td>${fmtD(x.d)}</td><td>${esc(x.l)}</td><td class="r">${x.deb?fmt(x.deb):''}</td><td class="r">${x.cre?fmt(x.cre):''}</td><td class="r">${fmt(solde)}</td></tr>`}).join('')}</table><p><b>Solde ${solde>0?'dû par le client':'en faveur du client'} : ${fmt(Math.abs(solde))}</b></p>`}
+ else if(type==='fiche'){const m=M(id);titre='Fiche client';body=App.docHead('FICHE CLIENT','','Éditée le '+fmtD(today()))+App.clientBox(id)+`<table><tr><th>Champ</th><th>Valeur</th></tr>${[['Type',m.type==='societe'?'Société':'Particulier'],['Statut',m.statut],['Client depuis',fmtD(m.dateCreation)],['Source',m.source],['Activité',m.activite],['Gérant',m.gerant],['Pièces fournies',(m.pieces||[]).join(', ')||'aucune'],['Notes',m.notes]].map(x=>`<tr><td>${x[0]}</td><td>${esc(x[1]||'—')}</td></tr>`).join('')}</table><h2>Abonnements</h2><table><tr><th>Formule</th><th>Espace</th><th>Début</th><th>Fin</th><th>Statut</th></tr>${S.abonnements.filter(a=>a.membreId===id).map(a=>`<tr><td>${esc(T(a.tarifId)?.label)}</td><td>${a.espaceId?esc(E(a.espaceId)?.code):'—'}</td><td>${fmtD(a.debut)}</td><td>${fmtD(a.fin)}</td><td>${App.abStatut(a)}</td></tr>`).join('')||'<tr><td colspan="5">—</td></tr>'}</table>`}
+ else if(type==='vierge'){titre='Formulaire d\'ouverture de compte';body=App.docHead('FORMULAIRE D\'OUVERTURE DE COMPTE','','Date : ____ / ____ / ________')+`<h2>Identité</h2><table>${['Nom et prénom','Raison sociale (si société)','Forme juridique','N° RC','NIF','AI / NIS','Adresse','Téléphone / WhatsApp','Email','Activité','Gérant / représentant'].map(x=>`<tr><td style="width:35%">${x}</td><td></td></tr>`).join('')}</table><h2>Formule choisie</h2><table>${S.tarifs.filter(t=>['mois','trimestre','semaine'].includes(t.unite)).map(t=>`<tr><td>☐ ${esc(t.label)}</td><td class="r">${fmt0(t.prix)} DA / ${t.unite}</td></tr>`).join('')}</table><h2>Pièces fournies</h2><p>${PIECES.map(p=>'☐ '+p).join(' &nbsp; ')}</p><p>Je déclare avoir pris connaissance du règlement intérieur et des conditions générales de ${esc(s.nom)}.</p><div class="sig"><div>Signature du client<span></span></div><div>Réservé à l'accueil<span></span></div></div>`}
+ return{titre,html:`<div class="doc">${body}${App.docFoot()}</div>`}};
+App.printDoc=(type,id)=>{const d=App.buildDoc(type,id);if(!d)return toast('Document introuvable',true);document.getElementById('printArea').innerHTML=d.html;
+ modal(d.titre,`<div class="doc-view">${d.html}</div>`,{size:'xl',foot:`<span class="hint" style="flex:1">Imprimer → choisissez « Enregistrer en PDF » dans la boîte d'impression pour obtenir un fichier PDF.</span><button class="btn" onclick="closeModal()">Fermer</button><button class="btn" onclick="App.openDoc()">Ouvrir dans un onglet</button><button class="btn p" onclick="window.print()">Imprimer / PDF</button>`});
+ log('Document '+d.titre+' généré')};
+App.openDoc=()=>{const css=document.querySelector('style').textContent;const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Document</title><style>${css}#printArea{display:block}</style></head><body><div id="printArea">${document.getElementById('printArea').innerHTML}</div><script>setTimeout(()=>window.print(),400)<\/script></body></html>`;
+ try{const w=window.open('','_blank');if(!w)throw 0;w.document.write(html);w.document.close()}catch(e){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download='document.html';a.click()}catch(e2){toast('Ouverture bloquée par le navigateur : utilisez Imprimer / PDF',true)}}};
+App.page_documents=()=>{const opts=membreOpts();return`<div class="grid g2"><div class="card"><h3>Documents client</h3><form id="fDoc" class="f" onsubmit="return false">${fld('Client',`<select name="membreId">${sel(opts,App._arg||'')}</select>`)}${fld('Document',`<select name="type">${sel([{v:'domiciliation',l:'Attestation de domiciliation (pour le CNRC / impôts)'},{v:'contrat',l:'Contrat d\'abonnement coworking (dernier abonnement)'},{v:'presence',l:'Attestation d\'occupation / de présence'},{v:'releve',l:'Relevé de compte client'},{v:'fiche',l:'Fiche client récapitulative'}],'domiciliation')}</select>`)}<div class="btns"><button class="btn p" onclick="App.genDoc()">Générer & aperçu</button></div></form><div class="hint" style="margin-top:12px">Le contrat utilise l'abonnement le plus récent du client. Les attestations sont numérotées automatiquement (série ${esc(S.settings.pCtr)}).</div></div>
+ <div class="card"><h3>Formulaires vierges & modèles</h3><div class="btns"><button class="btn" onclick="App.printDoc('vierge')">Formulaire d'ouverture de compte (papier)</button></div><h3 style="margin-top:18px">Historique des attestations émises</h3>${S.docs.length?`<table><tr><th>N°</th><th>Date</th><th>Type</th><th>Client</th></tr>${S.docs.slice().reverse().slice(0,30).map(x=>`<tr><td>${x.numero}</td><td>${fmtD(x.date)}</td><td>${x.type}</td><td>${esc(mName(x.membreId))}</td></tr>`).join('')}</table>`:'<div class="empty">Aucune attestation émise.</div>'}</div></div>`};
+App.genDoc=()=>{const o=getForm('fDoc');if(!o.membreId)return toast('Choisissez un client',true);if(o.type==='contrat'){const a=S.abonnements.filter(x=>x.membreId===o.membreId).sort((x,y)=>y.debut.localeCompare(x.debut))[0];if(!a)return toast('Ce client n\'a pas d\'abonnement',true);return App.printDoc('contrat',a.id)}App.printDoc(o.type,o.membreId)};
+
+/* ===================== RAPPORTS ===================== */
+App.page_rapports=()=>{const months=[];const d=new Date();for(let i=11;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1);months.push(iso(x).slice(0,7))}
+ const enc=months.map(k=>S.paiements.filter(p=>monthKey(p.date)===k).reduce((s,p)=>s+p.montant,0));const fac=months.map(k=>S.factures.filter(f=>monthKey(f.date)===k&&!['brouillon','annulée'].includes(f.statut)).reduce((s,f)=>s+f.totaux.htn,0));const mx=Math.max(1,...enc,...fac);
+ const cat={};S.factures.filter(f=>!['brouillon','annulée'].includes(f.statut)&&monthKey(f.date)>=months[0]).forEach(f=>f.lignes.forEach(l=>{const t=S.tarifs.find(x=>l.desc.startsWith(x.label));const c=t?t.cat:'autre';cat[c]=(cat[c]||0)+l.qte*l.pu}));const catTot=Object.values(cat).reduce((s,v)=>s+v,0)||1;
+ const top=S.membres.map(m=>({m,v:S.paiements.filter(p=>p.membreId===m.id).reduce((s,p)=>s+p.montant,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v).slice(0,8);
+ const imp=S.factures.filter(f=>['émise','partielle'].includes(f.statut)).sort((a,b)=>a.echeance.localeCompare(b.echeance));const oc=App.occupation();
+ const bars=(vals,color)=>`<div class="bars">${vals.map((v,i)=>`<div style="height:${v/mx*100}%;background:${color}" title="${fmt(v)}"><em>${v?fmt0(v/1000)+'k':''}</em><span>${monthLabel(months[i])}</span></div>`).join('')}</div>`;
+ return`<div class="grid g2" style="margin-bottom:16px"><div class="card"><h3>Encaissements — 12 derniers mois</h3>${bars(enc,'var(--navy)')}<div style="height:20px"></div><div class="mini">Total : <b>${fmt(enc.reduce((a,b)=>a+b,0))}</b> · Moyenne mensuelle : ${fmt(enc.reduce((a,b)=>a+b,0)/12)}</div></div>
+ <div class="card"><h3>Chiffre d'affaires facturé HT — 12 derniers mois</h3>${bars(fac,'var(--gold)')}<div style="height:20px"></div><div class="mini">Total HT : <b>${fmt(fac.reduce((a,b)=>a+b,0))}</b> · TVA collectée : ${fmt(S.factures.filter(f=>!['brouillon','annulée'].includes(f.statut)&&monthKey(f.date)>=months[0]).reduce((s,f)=>s+f.totaux.tva,0))}</div></div></div>
+ <div class="grid g3" style="margin-bottom:16px"><div class="card"><h3>Répartition du CA par activité (HT)</h3>${Object.entries(cat).sort((a,b)=>b[1]-a[1]).map(x=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${esc(x[0])}</span><b>${fmt0(x[1])} DA · ${Math.round(x[1]/catTot*100)} %</b></div><div style="height:6px;background:#EEF0F4;border-radius:3px"><div style="height:6px;width:${x[1]/catTot*100}%;background:var(--navy);border-radius:3px"></div></div></div>`).join('')||'<div class="empty">Pas encore de facturation.</div>'}</div>
+ <div class="card"><h3>Occupation</h3><div class="big-num">${oc.taux} %</div><div class="mini">${oc.occ} postes occupés sur ${oc.postes} · ${S.espaces.filter(e=>e.type==='bureau'&&e.statut==='occupé').length} bureau(x) privatif(s)</div><div style="margin-top:12px" class="mini">Salle : ${S.reservations.filter(r=>monthKey(r.date)===nowMonth()&&r.statut!=='annulée').reduce((s,r)=>s+(tmin(r.fin)-tmin(r.debut))/60,0)} h réservées ce mois</div><div class="mini">Passages ce mois : ${S.checkins.filter(c=>monthKey(c.date)===nowMonth()).length}</div><div class="mini">Membres actifs : ${S.membres.filter(m=>m.statut==='actif').length} · Prospects : ${S.membres.filter(m=>m.statut==='prospect').length}</div>
+ <h3 style="margin-top:14px">Source des clients</h3>${(()=>{const s={};S.membres.forEach(m=>{s[m.source||'Non renseigné']=(s[m.source||'Non renseigné']||0)+1});return Object.entries(s).sort((a,b)=>b[1]-a[1]).map(x=>`<div class="mini">${esc(x[0])} : <b>${x[1]}</b></div>`).join('')})()}</div>
+ <div class="card"><h3>Meilleurs clients (encaissé)</h3>${top.length?`<table>${top.map(x=>`<tr><td>${esc(mName(x.m.id))}</td><td class="r"><b>${fmt0(x.v)} DA</b></td></tr>`).join('')}</table>`:'<div class="empty">—</div>'}</div></div>
+ <div class="card"><h3>Impayés et échéances <span class="sp"></span><b>${fmt(imp.reduce((s,f)=>s+App.resteOf(f),0))}</b></h3>${imp.length?`<div class="tw"><table><tr><th>Facture</th><th>Client</th><th>Échéance</th><th class="r">Retard (j)</th><th class="r">Reste dû</th><th></th></tr>${imp.map(f=>{const r=daysBetween(f.echeance,today());return`<tr><td>${f.numero}</td><td>${esc(mName(f.membreId)||f.client)}</td><td>${fmtD(f.echeance)}</td><td class="r" style="${r>0?'color:var(--rd);font-weight:700':''}">${r>0?r:'—'}</td><td class="r">${fmt(App.resteOf(f))}</td><td><button class="btn s" onclick="App.payModal('${f.id}')">Encaisser</button></td></tr>`}).join('')}</table></div>`:'<div class="empty">Aucun impayé. Bravo.</div>'}</div>
+ <div class="card" style="margin-top:16px"><h3>Journal d'activité</h3><div style="max-height:220px;overflow:auto">${S.journal.slice(0,60).map(j=>`<div class="mini" style="padding:3px 0;border-bottom:1px solid #EEF0F5">${new Date(j.d).toLocaleString('fr-FR')} — ${esc(j.t)}</div>`).join('')||'—'}</div></div>`};
+
+/* ===================== PARAMÈTRES ===================== */
+App.page_parametres=()=>{const s=S.settings;return`<div class="grid g2"><div class="card"><h3>Identité de l'entreprise (en-tête des documents)</h3><form id="fS" class="f f2" onsubmit="return false">${fld('Nom commercial',inp('nom',s.nom))}${fld('Raison sociale',inp('raison',s.raison))}<div style="grid-column:1/-1">${fld('Adresse',inp('adresse',s.adresse))}</div>${fld('RC',inp('rc',s.rc))}${fld('NIF',inp('nif',s.nif))}${fld('AI',inp('ai',s.ai))}${fld('NIS',inp('nis',s.nis))}${fld('Téléphone',inp('tel',s.tel))}${fld('Email',inp('email',s.email))}${fld('Site web',inp('site',s.site))}${fld('Gérant',inp('gerant',s.gerant))}${fld('Banque',inp('banque',s.banque))}${fld('RIB',inp('rib',s.rib))}${fld('Horaires',inp('horaires',s.horaires))}<div class="f f2" style="gap:8px">${fld('Ouverture (h)',inp('ouv',s.ouv,'number'))}${fld('Fermeture (h)',inp('ferm',s.ferm,'number'))}</div>
+ <div class="fs">Fiscalité & facturation</div>${fld('TVA (%)',inp('tva',s.tva,'number'))}${fld('Acompte salle non-abonné (%)',inp('acompteSalle',s.acompteSalle,'number'))}<label class="chk"><input type="checkbox" name="timbreActif" ${s.timbreActif?'checked':''}> Droit de timbre sur paiements en espèces</label><div class="f f3" style="gap:8px">${fld('Taux %',inp('timbreTaux',s.timbreTaux,'number','step="0.1"'))}${fld('Min DA',inp('timbreMin',s.timbreMin,'number'))}${fld('Max DA',inp('timbreMax',s.timbreMax,'number'))}</div><div style="grid-column:1/-1">${fld('Conditions de paiement (pied de facture)',`<textarea name="condPaiement">${esc(s.condPaiement)}</textarea>`)}</div>
+ <div class="fs">Numérotation</div>${fld('Préfixe factures',inp('pFac',s.pFac))}${fld('Prochain n° facture',inp('nFac',s.nFac,'number'))}${fld('Préfixe devis',inp('pDev',s.pDev))}${fld('Prochain n° devis',inp('nDev',s.nDev,'number'))}${fld('Préfixe reçus',inp('pRec',s.pRec))}${fld('Prochain n° reçu',inp('nRec',s.nRec,'number'))}${fld('Préfixe contrats/attestations',inp('pCtr',s.pCtr))}${fld('Prochain n° contrat',inp('nCtr',s.nCtr,'number'))}
+ <div class="fs">Logo</div><div style="grid-column:1/-1;display:flex;gap:12px;align-items:center">${s.logo?`<img src="${s.logo}" style="max-height:60px;border:1px solid var(--line);border-radius:6px;padding:4px">`:''}<input type="file" accept="image/*" onchange="App.loadLogo(this)">${s.logo?`<button class="btn s" onclick="S.settings.logo='';save();render()">Retirer</button>`:''}</div>
+ <div style="grid-column:1/-1"><button class="btn p" onclick="App.saveSettings()">Enregistrer les paramètres</button></div></form></div>
+ <div><div class="card" style="margin-bottom:16px"><h3>Grille tarifaire <span class="sp"></span><button class="btn s" onclick="App.tarifModal()">+ Tarif</button></h3><div class="tw"><table><tr><th>Code</th><th>Libellé</th><th>Catégorie</th><th class="r">Prix HT*</th><th>Unité</th><th></th></tr>${S.tarifs.map(t=>`<tr><td><b>${esc(t.code)}</b></td><td>${esc(t.label)}</td><td>${esc(t.cat)}</td><td class="r">${fmt0(t.prix)} DA</td><td>${esc(t.unite)}</td><td class="btns"><button class="btn s" onclick="App.tarifModal('${t.id}')">Modifier</button><button class="btn s d" onclick="confirmDel('Supprimer ce tarif ?',()=>{S.tarifs=S.tarifs.filter(x=>x.id!=='${t.id}');save();render()})">×</button></td></tr>`).join('')}</table></div><div class="hint" style="margin-top:8px">* Les pass heure/journée et impressions sont saisis TTC (prix affiché à l'accueil) ; la TVA en est extraite automatiquement. Les abonnements et locations de salle sont HT.</div></div>
+ <div class="card"><h3>Sauvegarde & données</h3><p class="hint" style="margin-bottom:10px">Les données sont enregistrées automatiquement dans ce navigateur. Exportez régulièrement une copie de sécurité (fichier JSON) et conservez-la sur Google Drive.</p><div class="btns"><button class="btn p" onclick="App.exportJSON()">Exporter la sauvegarde (.json)</button><label class="btn">Importer une sauvegarde <input type="file" accept=".json" style="display:none" onchange="App.importJSON(this)"></label><button class="btn" onclick="App.exportCSV()">Exporter clients & factures (.csv)</button></div><div class="btns" style="margin-top:14px"><button class="btn" onclick="confirmDel('Charger des données de démonstration (3 clients, factures, réservations) ?',()=>{seedDemo();save();render()})">Charger la démo</button><button class="btn d" onclick="confirmDel('Effacer TOUTES les données (clients, factures, paiements…) ? Cette action est irréversible. Les paramètres et tarifs sont conservés.',()=>{const st=S.settings,tf=S.tarifs;S=defaultState();S.settings=st;S.tarifs=tf;save();render()})">Tout effacer</button></div><div class="mini" style="margin-top:12px">${S.membres.length} clients · ${S.factures.length} factures · ${S.paiements.length} paiements · ${S.reservations.length} réservations · ${S.rdv.length} RDV</div></div></div></div>`};
+App.saveSettings=()=>{const o=getForm('fS');['tva','acompteSalle','timbreTaux','timbreMin','timbreMax','nFac','nDev','nRec','nCtr','ouv','ferm'].forEach(k=>o[k]=num(o[k]));Object.assign(S.settings,o);save();toast('Paramètres enregistrés');render()};
+App.loadLogo=el=>{const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{if(r.result.length>400000)return toast('Logo trop lourd (max ~300 Ko) — réduisez l\'image',true);S.settings.logo=r.result;save();render();toast('Logo ajouté')};r.readAsDataURL(f)};
+App.tarifModal=id=>{const t=id?T(id):{code:'',label:'',prix:'',unite:'mois',cat:'coworking'};modal(id?'Modifier le tarif':'Nouveau tarif',`<form id="fT" class="f f2" onsubmit="return false">${fld('Code',inp('code',t.code))}${fld('Libellé',inp('label',t.label))}${fld('Prix (DA)',inp('prix',t.prix,'number'))}${fld('Unité',`<select name="unite">${sel(['heure','jour','semaine','mois','trimestre','unité','forfait'].map(x=>({v:x,l:x})),t.unite)}</select>`)}${fld('Catégorie',`<select name="cat">${sel(['coworking','bureau','salle','domiciliation','incubation','service','autre'].map(x=>({v:x,l:x})),t.cat)}</select>`)}</form>`,{onSave:()=>{const o=getForm('fT');if(!o.label)return;const obj={...(t.id?t:{id:uid()}),...o,prix:num(o.prix)};if(id)Object.assign(t,obj);else S.tarifs.push(obj);save();closeModal();render()}})};
+App.exportJSON=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download=`horizon-cowork-sauvegarde-${today()}.json`;a.click();toast('Sauvegarde exportée')};
+App.importJSON=el=>{const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.settings||!d.membres)throw 0;confirmDel('Remplacer toutes les données actuelles par cette sauvegarde ?',()=>{S=d;save();render();toast('Sauvegarde importée')})}catch(e){toast('Fichier invalide',true)}};r.readAsText(f)};
+App.exportCSV=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Type','Numéro','Date','Client','Objet','HT','TVA','Net','Payé','Statut'].join(';')];S.factures.forEach(f=>rows.push(['Facture',f.numero,f.date,mName(f.membreId)||f.client,f.objet,f.totaux.htn,f.totaux.tva,f.totaux.net,App.paidOf(f.id),f.statut].map(q).join(';')));rows.push('');rows.push(['Client','Type','Téléphone','Email','NIF','RC','Statut','Depuis'].join(';'));S.membres.forEach(m=>rows.push([mName(m.id),m.type,m.tel,m.email,m.nif,m.rc,m.statut,m.dateCreation].map(q).join(';')));
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8'}));a.download=`horizon-cowork-export-${today()}.csv`;a.click()};
+
+/* ===================== INIT ===================== */
+(async()=>{S=await Store.load();if(!S){S=defaultState();seedDemo();await Store.save()}
+ if(!S.checkins)S.checkins=[];if(!S.docs)S.docs=[];
+ S.abonnements.forEach(a=>{if(a.statut==='actif'&&App.abStatut(a)==='expiré'&&a.espaceId){/* espace reste attribué jusqu'à libération manuelle */}});
+ render()})();
+</script></body></html>
